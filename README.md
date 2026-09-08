@@ -1,21 +1,36 @@
 # LALUM
 
-PWA scaffold for [Lalumapp.com](https://lalumapp.com) — the first commit in this repository.
+PWA for [Lalumapp.com](https://lalumapp.com).
 
 ## What's here
 
 - `public/manifest.json` — PWA manifest (`display: "standalone"`, full icon set, RTL/Hebrew).
 - `public/icons/` — generated icon set (72–512px, maskable 192/512, apple-touch-icon, favicons).
-- `public/logo-mark.png` — LALUM wordmark asset (transparent, white).
-- `public/index.html` — minimal app-shell placeholder that registers the manifest and service worker, so installability can be verified before real product screens land.
+- `public/index.html` — the real app shell: 4 screens (לקוחות / ביקורת AI / מרכז ידע / קהילה), hash-routed, no framework.
+- `public/styles.css` — design tokens + component styles.
+- `public/app.js` — screen switcher (nav clicks + hash routing), fires `lalum:screenchange` for `data.js` to hook.
+- `public/config.js` — public Supabase project URL + publishable (anon) key. Safe to expose client-side — see below.
+- `public/data.js` — Supabase Auth (magic link) + data for the two real-data screens.
 - `public/service-worker.js` — minimal cache-the-shell service worker (Chrome's install prompt expects a fetch handler).
 
-## Note on scope
+## Real data — what's connected and why it's safe to be public code
 
-This branch (`claude/customer-notification-rea-failure-u8x03o`) was originally set up for a legal customer-notification feature (רע"א), unrelated to this PWA scaffold. This is currently the only content in the repository — confirm with the repo owner whether the manifest/PWA work belongs on its own branch before merging.
+The Supabase project behind this app (`lalum-app`) is the firm's live backend — it already holds real client/consultation/billing data unrelated to this screen. Only two tables are wired into the UI, and both rely on Postgres Row Level Security, not UI hiding, to keep data private:
+
+- **`lalum_contacts`** (לקוחות screen) — `SELECT` restricted to `lalum_is_admin()`. An unauthenticated or non-admin session gets zero rows back from the database itself, regardless of what the client code asks for.
+- **`lalum_group_chat_messages`** (קהילה screen) — `SELECT`/`INSERT` require any signed-in session (`auth.uid() IS NOT NULL`); not public.
+
+Because RLS enforces this at the database, the anon/publishable key in `config.js` is safe to ship in public code (including this public repo) — it identifies the project, it does not grant access. **The one thing that must never happen is adding a table or policy that lets the `anon` role read either table directly** — always go through an authenticated session.
+
+The **published Artifact mockup** (Claude Design canvas / the standalone `LALUM App` demo) is intentionally **not** wired to Supabase: an Artifact's CSP blocks `fetch`/XHR to any host outside its own origin (Google Fonts excepted), so it technically cannot reach `supabase.co` even if code were added. It stays static/sample content — that's a hard technical boundary, not a policy choice, and it's the reason the shareable Artifact link can never leak real client data.
+
+## Verifying this actually works
+
+This sandbox's outbound network policy blocks `cdn.jsdelivr.net` and `*.supabase.co`, so the Supabase Auth flow and data fetch could not be exercised end-to-end from here — only the graceful-failure path (library fails to load → visible error, not a blank screen) was verified. **Before relying on this in production**, open the deployed page in a normal browser and confirm: the magic-link sign-in actually arrives by email, an admin session shows real contacts, a non-admin session shows the "no permission" state (not an error), and a signed-in user can post to and see the community feed.
 
 ## Next steps
 
-- Replace `public/index.html` with the real app shell/framework once chosen.
-- Verify install prompt on a real device: the manifest's `display: "standalone"` only takes effect once the PWA is installed to the home screen — that's what removes the browser chrome (address bar, tabs) shown in the reel-script mockups.
-- Extend `service-worker.js`'s cache list as real routes/assets are added.
+- Replace the disabled "לקוח חדש" button with a real create flow (currently inert — connecting *read* access was this round's scope).
+- Wire ביקורת AI and מרכז ידע to real tables when there's a schema for them; they're still static/sample.
+- Extend `service-worker.js`'s cache list as routes/assets grow.
+- Consider enabling Supabase Auth's leaked-password protection and reviewing the `pg_net`-in-`public`-schema advisory noted by `get_advisors` — both pre-date this change but are worth a look.

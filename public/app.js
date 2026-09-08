@@ -2,7 +2,7 @@
 // the bottom nav and reflected in the URL hash so links/back-forward work.
 
 (function () {
-  const SCREENS = ['practice', 'risk', 'knowledge'];
+  const SCREENS = ['practice', 'risk', 'knowledge', 'community'];
   const title = document.getElementById('screen-title');
   const navItems = document.querySelectorAll('.nav-item');
 
@@ -18,6 +18,8 @@
       btn.classList.toggle('active', active);
       if (active) title.textContent = btn.dataset.title;
     });
+
+    document.dispatchEvent(new CustomEvent('lalum:screenchange', { detail: { name: name } }));
   }
 
   navItems.forEach((btn) => {
