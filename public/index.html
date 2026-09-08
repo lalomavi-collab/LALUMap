@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>LALUM</title>
+  <meta name="description" content="LALUM Legal Engine — ניהול משרד, ביקורת סיכון AI ומרכז ידע נדל&quot;ן">
+
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0A0A0C">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="LALUM">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16.png">
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500&family=Manrope:wght@400;500;600&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; height: 100%; background: #0A0A0C; color: #F5F5F4; font-family: 'Manrope', system-ui, sans-serif; }
+    .splash { min-height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; padding: 24px; text-align: center; }
+    .splash img { width: 160px; height: auto; }
+    .splash p { font-size: 13px; color: rgba(245,245,244,.5); max-width: 320px; line-height: 1.6; }
+  </style>
+</head>
+<body>
+  <div class="splash">
+    <img src="/logo-mark.png" alt="LALUM">
+    <p>שלד PWA ראשוני — manifest.json, אייקונים והתקנה למסך הבית מוגדרים. תוכן המוצר יתווסף בהמשך.</p>
+  </div>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js').catch(() => {
+          // Installability degrades gracefully without a service worker;
+          // the manifest + HTTPS are already in place.
+        });
+      });
+    }
+  </script>
+</body>
+</html>
