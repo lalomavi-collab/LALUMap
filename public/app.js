@@ -129,3 +129,65 @@
 
   render(MODES[0]);
 })();
+
+// מרכז ידע — the same four practice-pillar filter as ביקורת AI, so picking
+// a domain means the same thing on both screens. Still sample cards (2 per
+// domain) — only the filter itself is real, matching the pattern already
+// established for ביקורת AI.
+(function () {
+  const DOMAINS = [
+    {
+      id: 'realestate', label: 'נדל״ן · תמ״א 38',
+      cards: [
+        { tag: 'תמ״א 38', title: 'בג״ץ 1720/24', body: 'בית המשפט קבע כי חובת יידוע הדיירים חלה גם על עסקאות משולבות, ולא ניתן להסתפק בגילוי חלקי' },
+        { tag: 'פינוי בינוי', title: 'ע״א 5502/23', body: 'נדחתה טענת קיפוח מיעוט הדיירים בהעדר חוות דעת שמאית עצמאית מטעמם' },
+      ],
+    },
+    {
+      id: 'ai', label: 'ממשל AI',
+      cards: [
+        { tag: 'GPAI', title: 'החלטת אכיפה 2/26', body: 'ספק מודל שימוש כללי (GPAI) חייב לתעד מקורות אימון גם כאשר המודל משולב במוצר צד ג׳' },
+        { tag: 'אחריות אלגוריתמית', title: 'ת״א 4410-25', body: 'נדחתה טענת הגנה של "המערכת החליטה" — אחריות המפעיל האנושי לא פוקעת בהיעדר בקרה מתועדת' },
+      ],
+    },
+    {
+      id: 'ma', label: 'מיזוגים ורכישות',
+      cards: [
+        { tag: 'מצגים ואחריות', title: 'ת״א 8821-24', body: 'מצג כוזב בדוח פיננסי שנחשף בבדיקת נאותות מקנה עילת ביטול, גם כשההסכם כלל תניית "as-is"' },
+        { tag: 'בדיקת נאותות', title: 'ע״א 1290/25', body: 'חובת גילוי יזום חלה על המוכר גם בהיעדר שאלה מפורשת של הרוכש, כשמדובר במידע מהותי' },
+      ],
+    },
+    {
+      id: 'mediation', label: 'גישור (DOM)',
+      cards: [
+        { tag: 'אכיפת הסדר', title: 'רע״א 3350/25', body: 'הסכם גישור שנחתם בפני מגשר מוסמך אוכף כפסק דין, גם בלי אישור בית משפט בדיעבד' },
+        { tag: 'מיפוי סוגיות', title: 'מודל DOM', body: 'הפרדת סוגיות עמדה מסוגיות אינטרס מקצרת משא ומתן בגישור, לפי מדגם הפרקטיקה' },
+      ],
+    },
+  ];
+
+  const tabsEl = document.getElementById('knowledge-domains');
+  const cardsEl = document.getElementById('knowledge-cards');
+  if (!tabsEl || !cardsEl) return;
+
+  const bookmarkIcon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="1.6"><path d="M6 3h12v18l-6-4-6 4V3z"/></svg>';
+
+  function render(domain) {
+    cardsEl.innerHTML = domain.cards.map((c) => `
+      <div class="card">
+        <div class="card-row"><span class="tag">${c.tag}</span>${bookmarkIcon}</div>
+        <div class="card-title">${c.title}</div>
+        <p class="card-meta" style="line-height:1.6; margin:0;">${c.body}</p>
+        <span class="card-meta" style="font-size:11px;">תקציר דקה</span>
+      </div>`).join('');
+  }
+
+  tabsEl.innerHTML = DOMAINS.map((d, i) => `<button type="button" class="tab${i === 0 ? ' active' : ''}" data-domain="${d.id}">${d.label}</button>`).join('');
+  tabsEl.addEventListener('click', (e) => {
+    const btn = e.target.closest('.tab');
+    if (!btn) return;
+    tabsEl.querySelectorAll('.tab').forEach((t) => t.classList.toggle('active', t === btn));
+    render(DOMAINS.find((d) => d.id === btn.dataset.domain));
+  });
+  render(DOMAINS[0]);
+})();

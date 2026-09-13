@@ -62,25 +62,11 @@
         <button class="tab active" type="button">פסיקה</button>
       </div>
 
-      <div class="card">
-        <div class="card-row">
-          <span class="tag">תמ״א 38</span>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="1.6"><path d="M6 3h12v18l-6-4-6 4V3z"/></svg>
-        </div>
-        <div class="card-title">בג״ץ 1720/24</div>
-        <p class="card-meta" style="line-height:1.6; margin:0;">בית המשפט קבע כי חובת יידוע הדיירים חלה גם על עסקאות משולבות, ולא ניתן להסתפק בגילוי חלקי</p>
-        <span class="card-meta" style="font-size:11px;">תקציר דקה</span>
-      </div>
-
-      <div class="card">
-        <div class="card-row">
-          <span class="tag">פינוי בינוי</span>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="1.6"><path d="M6 3h12v18l-6-4-6 4V3z"/></svg>
-        </div>
-        <div class="card-title">ע״א 5502/23</div>
-        <p class="card-meta" style="line-height:1.6; margin:0;">נדחתה טענת קיפוח מיעוט הדיירים בהעדר חוות דעת שמאית עצמאית מטעמם</p>
-        <span class="card-meta" style="font-size:11px;">תקציר דקה</span>
-      </div>
+      <!-- Domain filter: same four practice pillars as ביקורת AI, so the
+           same mental model ("pick your area") carries across screens.
+           Still sample cards (2 per domain) — only the filter is real. -->
+      <div class="tabs" id="knowledge-domains" role="tablist" aria-label="תחום"></div>
+      <div id="knowledge-cards"></div>
     </main>
 
     <!-- קהילה — מחובר ל-lalum_group_chat_messages, קריאה/כתיבה לכל משתמש מחובר -->
