@@ -40,42 +40,13 @@
 
     <!-- ביקורת AI -->
     <main class="screen" id="screen-risk" aria-labelledby="screen-title">
-      <div class="card" style="flex-direction: row; align-items: center; gap: 12px;">
-        <div style="width:38px;height:38px;border-radius:10px;background:var(--green-bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
-        </div>
-        <div>
-          <div class="card-title">pricing-engine-v3</div>
-          <div class="card-meta">הועלה · נסרק לפני 2 דק'</div>
-        </div>
-      </div>
-
-      <div class="ring-wrap">
-        <svg width="148" height="148" viewBox="0 0 148 148">
-          <circle cx="74" cy="74" r="62" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="10"/>
-          <circle cx="74" cy="74" r="62" fill="none" stroke="var(--amber)" stroke-width="10" stroke-linecap="round"
-            stroke-dasharray="389.6" stroke-dashoffset="86" transform="rotate(-90 74 74)"/>
-          <text x="74" y="70" text-anchor="middle" fill="var(--text)" font-family="Jost, sans-serif" font-size="34" font-weight="500">78</text>
-          <text x="74" y="92" text-anchor="middle" fill="var(--text-secondary)" font-family="Manrope, sans-serif" font-size="11">מתוך 100</text>
-        </svg>
-        <span class="card-meta">ציון תאימות EU AI Act</span>
-        <span class="pill pill-amber">סיכון: בינוני</span>
-      </div>
-
-      <div>
-        <div class="bar-row"><span>DOM</span><span>82</span></div>
-        <div class="bar-track"><div class="bar-fill" style="width:82%"></div></div>
-      </div>
-      <div>
-        <div class="bar-row"><span>RECIR</span><span>74</span></div>
-        <div class="bar-track"><div class="bar-fill" style="width:74%"></div></div>
-      </div>
-      <div>
-        <div class="bar-row"><span>SRME</span><span>91</span></div>
-        <div class="bar-track"><div class="bar-fill" style="width:91%"></div></div>
-      </div>
-
-      <button class="btn-primary" type="button" style="background:none;border:1px solid var(--border-strong);color:var(--text);">צפייה בדוח מלא</button>
+      <!-- Mode switcher: the four practice pillars share this one audit view
+           instead of each getting its own screen. Still sample/static data
+           (see README — this screen has no schema behind it yet); the
+           switcher itself and the tone system (ok/warn/high, matching the
+           risk-badge language already live on lalumapp.com) are real. -->
+      <div class="tabs" id="risk-tabs" role="tablist" aria-label="תחום ביקורת"></div>
+      <div id="risk-content"></div>
     </main>
 
     <!-- מרכז ידע -->
