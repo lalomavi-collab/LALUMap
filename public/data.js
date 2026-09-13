@@ -39,16 +39,33 @@
     return `לפני ${Math.round(hrs / 24)} ימים`;
   }
 
+  // Outlined pill field + a checkmark success banner (once the link is sent),
+  // matching the labelled-field / success-state pattern of the app's own
+  // reference direction, instead of a plain status line.
   function authGateHTML(promptText) {
     return `
-      <div class="card" style="gap:12px;">
+      <div class="card" style="gap:14px;">
         <div class="card-meta">${escapeHTML(promptText)}</div>
-        <form class="auth-form" style="display:flex; gap:8px;">
+        <form class="auth-form" style="display:flex; flex-direction:column; gap:10px;">
           <input type="email" required placeholder="האימייל שלך" class="auth-email"
-            style="flex:1; background:var(--surface-raised); border:1px solid var(--border); border-radius:10px; padding:0 12px; height:40px; color:var(--text); font-family:inherit; font-size:13px;">
-          <button type="submit" class="btn-primary" style="width:auto; height:40px; padding:0 16px;">שליחת לינק כניסה</button>
+            style="background:var(--surface); border:1px solid var(--border-strong); border-radius:9999px; padding:0 18px; height:44px; color:var(--text); font-family:inherit; font-size:14px;">
+          <button type="submit" class="btn-primary" style="height:44px;">שליחת לינק כניסה</button>
         </form>
-        <div class="auth-status card-meta" style="font-size:12px;"></div>
+        <div class="auth-status"></div>
+      </div>`;
+  }
+
+  function authStatusHTML(kind, text) {
+    if (kind === 'sending') return `<span class="card-meta" style="font-size:12px;">${escapeHTML(text)}</span>`;
+    if (kind === 'error') return `<span class="card-meta" style="font-size:12px; color:var(--red);">${escapeHTML(text)}</span>`;
+    // 'ok': a small check-in-a-circle banner, same visual language as the
+    // ok-tone check icon in the ביקורת AI cards.
+    return `
+      <div style="display:flex; align-items:center; gap:8px; background:var(--green-bg); border-radius:9999px; padding:8px 14px;">
+        <span style="width:20px;height:20px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        </span>
+        <span class="card-meta" style="font-size:12.5px; color:var(--text); font-weight:600;">${escapeHTML(text)}</span>
       </div>`;
   }
 
@@ -60,12 +77,14 @@
       e.preventDefault();
       const email = form.querySelector('.auth-email').value.trim();
       if (!email) return;
-      status.textContent = 'שולח...';
+      status.innerHTML = authStatusHTML('sending', 'שולח...');
       const { error } = await client.auth.signInWithOtp({
         email,
         options: { emailRedirectTo: window.location.origin },
       });
-      status.textContent = error ? ('שגיאה: ' + error.message) : 'לינק כניסה נשלח — בדקו את המייל';
+      status.innerHTML = error
+        ? authStatusHTML('error', 'שגיאה: ' + error.message)
+        : authStatusHTML('ok', 'לינק כניסה נשלח — בדקו את המייל');
     });
   }
 

@@ -1,22 +1,22 @@
-/* LALUM design tokens — light, warm, nature-toned direction (reference:
-   Talking Tree — cream/sage panels, deep forest-green accent, pill-shaped
-   controls, geometric-sans display type). Replaces the earlier near-black
-   theme app-wide; lalumapp.com's own clay/ivory brand is untouched, this is
-   LALUMap only. Semantic status colours (amber/green/red, used by the risk
-   tone system) are kept visually distinct from --brand's forest green. */
+/* LALUM design tokens — light, warm direction: Talking Tree's structure
+   (pill-shaped controls, labelled cards, geometric-sans display type,
+   generous whitespace) with a gentle, muted sage-green brand accent —
+   softer than Talking Tree's own deep forest green, and kept visually
+   distinct from --green (the risk-tone "ok" status colour, brighter and
+   more saturated) so a brand button and an ok-pill never read as the
+   same colour. lalumapp.com's own clay/ivory brand is untouched. */
 :root {
-  --bg: #F7F6F1;
+  --bg: #F5F1E8;
   --surface: #FFFFFF;
-  --surface-raised: #EEF0E6;
-  --border: rgba(26, 29, 24, 0.10);
-  --border-strong: rgba(26, 29, 24, 0.18);
-  --text: #1A1D18;
-  --text-secondary: rgba(26, 29, 24, 0.62);
-  --text-tertiary: rgba(26, 29, 24, 0.42);
-  --brand: #3F6B4A;
-  --brand-hover: #355A3F;
-  --brand-tint: rgba(63, 107, 74, 0.12);
-  --sage: #D7DFC9;
+  --surface-raised: #E7EDE4;
+  --border: rgba(26, 24, 21, 0.10);
+  --border-strong: rgba(26, 24, 21, 0.18);
+  --text: #1A1815;
+  --text-secondary: rgba(26, 24, 21, 0.62);
+  --text-tertiary: rgba(26, 24, 21, 0.42);
+  --brand: #6B8F6E;
+  --brand-hover: #5A7A5D;
+  --brand-tint: #E7EDE4;
   --amber: #B5811A;
   --amber-bg: rgba(181, 129, 26, 0.14);
   --green: #3F9D5A;
@@ -104,7 +104,7 @@ button { font-family: inherit; cursor: pointer; }
 .card {
   background: var(--surface); border: 1px solid var(--border);
   border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 8px;
-  box-shadow: 0 1px 3px rgba(26, 29, 24, 0.04);
+  box-shadow: 0 1px 3px rgba(26, 24, 21, 0.05);
 }
 .card-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .card-title { font-weight: 600; font-size: 15px; }
@@ -121,7 +121,7 @@ button { font-family: inherit; cursor: pointer; }
   width: 100%; max-width: 480px; height: var(--nav-h);
   display: flex; align-items: center; justify-content: space-around;
   padding-bottom: env(safe-area-inset-bottom, 0px);
-  border-top: 1px solid var(--border); background: rgba(247,246,241,.92);
+  border-top: 1px solid var(--border); background: rgba(245,241,232,.92);
   backdrop-filter: blur(12px);
 }
 .nav-item {
@@ -133,7 +133,7 @@ button { font-family: inherit; cursor: pointer; }
 .nav-item span { font-size: 10px; }
 
 .ring-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 8px 0 4px; }
-.bar-track { height: 6px; border-radius: 3px; background: rgba(26,29,24,.08); overflow: hidden; }
+.bar-track { height: 6px; border-radius: 3px; background: rgba(26,24,21,.08); overflow: hidden; }
 .bar-fill { height: 100%; border-radius: 3px; background: var(--brand); }
 .bar-row { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px; color: var(--text-secondary); }
 
