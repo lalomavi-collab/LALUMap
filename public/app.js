@@ -95,7 +95,7 @@
 
       <div class="ring-wrap">
         <svg width="148" height="148" viewBox="0 0 148 148">
-          <circle cx="74" cy="74" r="62" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="10"/>
+          <circle cx="74" cy="74" r="62" fill="none" stroke="rgba(26,29,24,.08)" stroke-width="10"/>
           <circle cx="74" cy="74" r="62" fill="none" stroke="${tone.fg}" stroke-width="10" stroke-linecap="round"
             stroke-dasharray="${CIRC}" stroke-dashoffset="${offset}" transform="rotate(-90 74 74)"/>
           <text x="74" y="70" text-anchor="middle" fill="var(--text)" font-family="Jost, sans-serif" font-size="34" font-weight="500">${mode.score}</text>
