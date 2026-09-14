@@ -148,3 +148,6 @@ button { font-family: inherit; cursor: pointer; }
 .tab.active { background: var(--brand); color: #fff; font-weight: 600; }
 
 .tag { font-size: 10.5px; font-weight: 600; padding: 3px 9px; border-radius: 9999px; background: var(--brand-tint); color: var(--brand); display: inline-block; }
+
+.vault-body { display: none; flex-direction: column; gap: 6px; padding-top: 4px; border-top: 1px solid var(--border); margin-top: 4px; }
+.vault-body.open { display: flex; }

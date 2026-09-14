@@ -163,15 +163,55 @@
       clientsList.innerHTML = '<div class="card"><div class="card-meta">אין לקוחות להצגה, או שאין הרשאת מנהל/ת לחשבון זה.</div></div>';
       return;
     }
-    clientsList.innerHTML = data.map((c) => `
+    clientsList.innerHTML = data.map((c, i) => `
       <div class="card">
         <div class="card-row">
           <span class="card-title">${escapeHTML(c.full_name || 'ללא שם')}</span>
           ${c.is_lead ? '<span class="pill pill-amber">ליד</span>' : '<span class="pill pill-green">לקוח</span>'}
         </div>
         <span class="card-meta">${escapeHTML(c.phone || '')} · ${timeAgo(c.created_at)}</span>
+        <button type="button" class="vault-toggle" data-vault="${i}" aria-expanded="false" style="display:flex; align-items:center; gap:6px; background:none; border:none; padding:4px 0 0; color:var(--text-secondary); font-size:12.5px; font-weight:600; width:fit-content;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7h6l2 2h10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/></svg>
+          תיק מסמכים
+          <svg class="vault-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transition:transform .15s ease;"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="vault-body" data-vault-body="${i}">
+          ${matterVaultHTML(i)}
+        </div>
       </div>`).join('');
   }
+
+  // "תיק מסמכים" — a per-client document vault preview. Deliberately static:
+  // there is no documents/attachments schema behind lalum_contacts yet, so
+  // this shows what the feature would look like without fabricating real
+  // records against a real client's name.
+  const VAULT_DOCS = [
+    { name: 'הסכם שכר טרחה', tone: 'green', label: 'נחתם' },
+    { name: 'ייפוי כוח', tone: 'amber', label: 'ממתין לחתימה' },
+    { name: 'תעודת זהות (סרוקה)', tone: 'green', label: 'נסרק' },
+    { name: 'טיוטת הסכם', tone: 'neutral', label: 'בעיבוד' },
+  ];
+  function matterVaultHTML(seed) {
+    const rows = VAULT_DOCS.map((d) => `
+      <div class="card-row" style="gap:8px;">
+        <span style="display:flex; align-items:center; gap:8px; font-size:13px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-tertiary)" stroke-width="1.7"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+          ${escapeHTML(d.name)}
+        </span>
+        <span class="pill pill-${d.tone}">${d.label}</span>
+      </div>`).join('');
+    return rows + '<span class="card-meta" style="font-size:11px; font-style:italic;">תצוגה לדוגמה — טרם מחובר למסמכים אמיתיים</span>';
+  }
+
+  clientsList.addEventListener('click', (e) => {
+    const btn = e.target.closest('.vault-toggle');
+    if (!btn) return;
+    const body = clientsList.querySelector(`[data-vault-body="${btn.dataset.vault}"]`);
+    if (!body) return;
+    const open = body.classList.toggle('open');
+    btn.setAttribute('aria-expanded', String(open));
+    btn.querySelector('.vault-chevron').style.transform = open ? 'rotate(180deg)' : 'none';
+  });
 
   async function loadCommunity(session) {
     if (!session) {
