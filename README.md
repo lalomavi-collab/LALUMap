@@ -22,6 +22,12 @@ The Supabase project behind this app (`lalum-app`) is the firm's live backend �
 
 Because RLS enforces this at the database, the anon/publishable key in `config.js` is safe to ship in public code (including this public repo) — it identifies the project, it does not grant access. **The one thing that must never happen is adding a table or policy that lets the `anon` role read either table directly** — always go through an authenticated session.
 
+## Newsletter — daily short update, opt-in, human-approved before every send
+
+The "עדכון יומי" card on מרכז ידע lets anyone subscribe with just an email (no auth) via the public `lalum-newsletter-subscribe` edge function, which upserts into `public.lalum_newsletter_subscribers` (mirrors `lalum_leads`'s consent pattern: `consent_at` + the exact consent wording shown at signup, for Privacy Law Amendment 13). Every sent email carries a one-click unsubscribe link (`lalum-newsletter-unsubscribe`, token-based, no login needed).
+
+The actual daily send (`lalum-newsletter-daily`) is on a `pg_cron` schedule (06:00 UTC) but is **content-gated by design**: it only ever sends a row from `public.lalum_newsletter_updates` that a human has flipped from `draft` to `approved`. An empty or all-draft queue means the cron tick is a silent no-op — nothing is ever auto-generated or auto-approved. To actually send a day's update: write/edit a row in `lalum_newsletter_updates`, set its `status` to `approved`, and the next cron tick (or a manual invoke) sends it once and marks it `sent`.
+
 The **published Artifact mockup** (Claude Design canvas / the standalone `LALUM App` demo) is intentionally **not** wired to Supabase: an Artifact's CSP blocks `fetch`/XHR to any host outside its own origin (Google Fonts excepted), so it technically cannot reach `supabase.co` even if code were added. It stays static/sample content — that's a hard technical boundary, not a policy choice, and it's the reason the shareable Artifact link can never leak real client data.
 
 ## Verifying this actually works

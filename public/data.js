@@ -19,6 +19,8 @@
     const msg = '<div class="card"><div class="card-meta">לא ניתן היה לטעון את שירות הנתונים (בעיית רשת). רעננו את הדף ונסו שוב.</div></div>';
     clientsGate.innerHTML = msg;
     communityGate.innerHTML = msg;
+    const newsletterCard = document.getElementById('newsletter-card');
+    if (newsletterCard) newsletterCard.innerHTML = msg;
     return;
   }
 
@@ -87,6 +89,56 @@
         : authStatusHTML('ok', 'לינק כניסה נשלח — בדקו את המייל');
     });
   }
+
+  // ניוזלטר יומי — public signup via lalum-newsletter-subscribe (no auth
+  // required; consent text is shown and stored verbatim, per Privacy Law
+  // Amendment 13). Reuses the same pill-input / checkmark-success pattern
+  // as authGateHTML/authStatusHTML above.
+  const NEWSLETTER_CONSENT_VERSION = 'v1-2026-09';
+  const NEWSLETTER_CONSENT_TEXT = 'בהרשמה אני מאשר/ת קבלת עדכון קצר מ-LALUM מדי יום. ניתן להסיר בכל עת בלחיצה אחת בתחתית כל מייל.';
+
+  function newsletterCardHTML() {
+    return `
+      <div class="card" style="gap:14px;">
+        <div class="section-label">עדכון יומי</div>
+        <div class="card-title">תובנה משפטית קצרה כל בוקר</div>
+        <div class="card-meta">${escapeHTML(NEWSLETTER_CONSENT_TEXT)}</div>
+        <form class="newsletter-form" style="display:flex; flex-direction:column; gap:10px;">
+          <input type="email" required placeholder="האימייל שלך" class="newsletter-email"
+            style="background:var(--surface); border:1px solid var(--border-strong); border-radius:9999px; padding:0 18px; height:44px; color:var(--text); font-family:inherit; font-size:14px;">
+          <button type="submit" class="btn-primary" style="height:44px;">הרשמה לעדכון היומי</button>
+        </form>
+        <div class="newsletter-status"></div>
+      </div>`;
+  }
+
+  function wireNewsletterForm() {
+    const container = document.getElementById('newsletter-card');
+    if (!container) return;
+    container.innerHTML = newsletterCardHTML();
+    const form = container.querySelector('.newsletter-form');
+    const status = container.querySelector('.newsletter-status');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = form.querySelector('.newsletter-email').value.trim();
+      if (!email) return;
+      status.innerHTML = authStatusHTML('sending', 'נרשמים...');
+      const { error } = await client.functions.invoke('lalum-newsletter-subscribe', {
+        body: {
+          email,
+          source: 'lalumap',
+          consent_text_version: NEWSLETTER_CONSENT_VERSION,
+          consent_text: NEWSLETTER_CONSENT_TEXT,
+        },
+      });
+      status.innerHTML = error
+        ? authStatusHTML('error', 'שגיאה בהרשמה — נסו שוב')
+        : authStatusHTML('ok', 'נרשמתם! העדכון הבא יגיע במייל');
+      if (!error) form.reset();
+    });
+  }
+
+  wireNewsletterForm();
 
   async function loadClients(session) {
     if (!session) {
