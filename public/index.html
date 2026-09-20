@@ -20,22 +20,24 @@
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
+  <a href="#main-content" class="sr-only skip-link">דלג לתוכן הראשי</a>
   <div class="app-shell">
     <header class="app-header">
       <h1 class="display" id="screen-title">לקוחות</h1>
       <div class="avatar" aria-hidden="true"></div>
     </header>
 
+    <div id="main-content" tabindex="-1">
     <!-- ניהול משרד — מחובר ל-lalum_contacts האמיתית, קריאה מוגבלת ל-admin ע"י RLS -->
     <main class="screen active" id="screen-practice" aria-labelledby="screen-title">
       <button class="btn-primary" type="button" disabled title="יצירת לקוח עדיין לא מחוברת">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14"/></svg>
         לקוח חדש
       </button>
 
       <div class="section-label">לקוחות (נתונים אמיתיים)</div>
-      <div id="clients-auth-gate"></div>
-      <div id="clients-list"></div>
+      <div id="clients-auth-gate" aria-live="polite"></div>
+      <div id="clients-list" aria-live="polite"></div>
     </main>
 
     <!-- ביקורת AI -->
@@ -52,14 +54,17 @@
     <!-- מרכז ידע -->
     <main class="screen" id="screen-knowledge" aria-labelledby="screen-title">
       <div class="search-bar">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
         <span>חיפוש נושא, סעיף, פסק דין</span>
       </div>
 
-      <div class="tabs">
-        <button class="tab" type="button">קורסים</button>
-        <button class="tab" type="button">מדריכים</button>
-        <button class="tab active" type="button">פסיקה</button>
+      <!-- Static for now (see README: only the domain filter below is wired
+           up); roles reflect the real current state (פסיקה selected)
+           rather than implying קורסים/מדריכים already switch content. -->
+      <div class="tabs" role="tablist" aria-label="סוג תוכן">
+        <button class="tab" type="button" role="tab" aria-selected="false">קורסים</button>
+        <button class="tab" type="button" role="tab" aria-selected="false">מדריכים</button>
+        <button class="tab active" type="button" role="tab" aria-selected="true">פסיקה</button>
       </div>
 
       <!-- Domain filter: same four practice pillars as ביקורת AI, so the
@@ -75,30 +80,32 @@
 
     <!-- קהילה — מחובר ל-lalum_group_chat_messages, קריאה/כתיבה לכל משתמש מחובר -->
     <main class="screen" id="screen-community" aria-labelledby="screen-title">
-      <div id="community-auth-gate"></div>
+      <div id="community-auth-gate" aria-live="polite"></div>
       <form id="community-composer" class="card" style="flex-direction:row; gap:8px; align-items:center; display:none;">
+        <label for="community-input" class="sr-only">הודעה לקהילה</label>
         <input type="text" id="community-input" placeholder="שתפו את הקהילה..." autocomplete="off"
           style="flex:1; background:none; border:none; color:var(--text); font-family:inherit; font-size:14px; outline:none;">
         <button type="submit" class="btn-primary" style="width:auto; height:40px; padding:0 18px;">שליחה</button>
       </form>
-      <div id="community-list"></div>
+      <div id="community-list" aria-live="polite"></div>
     </main>
+    </div>
 
     <nav class="bottom-nav" aria-label="ניווט ראשי">
-      <button class="nav-item active" type="button" data-screen="practice" data-title="לקוחות">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.4"/><path d="M2.5 20c1-4 3.4-6 6.5-6s5.5 2 6.5 6"/><circle cx="17.5" cy="9" r="2.6"/><path d="M15.5 13.2c2.4.3 4 2 4.8 4.8"/></svg>
+      <button class="nav-item active" type="button" data-screen="practice" data-title="לקוחות" aria-current="page">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" focusable="false"><circle cx="9" cy="8" r="3.4"/><path d="M2.5 20c1-4 3.4-6 6.5-6s5.5 2 6.5 6"/><circle cx="17.5" cy="9" r="2.6"/><path d="M15.5 13.2c2.4.3 4 2 4.8 4.8"/></svg>
         <span>לקוחות</span>
       </button>
       <button class="nav-item" type="button" data-screen="risk" data-title="ביקורת AI">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 3v18M4 8h5M4 16h5"/><circle cx="16.5" cy="12" r="5.2"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" focusable="false"><path d="M9 3v18M4 8h5M4 16h5"/><circle cx="16.5" cy="12" r="5.2"/></svg>
         <span>ביקורת AI</span>
       </button>
       <button class="nav-item" type="button" data-screen="knowledge" data-title="מרכז ידע">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5c3-1.5 6-1.5 8 0v14c-2-1.5-5-1.5-8 0V5zM20 5c-3-1.5-6-1.5-8 0v14c2-1.5 5-1.5 8 0V5z"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" focusable="false"><path d="M4 5c3-1.5 6-1.5 8 0v14c-2-1.5-5-1.5-8 0V5zM20 5c-3-1.5-6-1.5-8 0v14c2-1.5 5-1.5 8 0V5z"/></svg>
         <span>מרכז ידע</span>
       </button>
       <button class="nav-item" type="button" data-screen="community" data-title="קהילה">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="9" r="3"/><circle cx="16" cy="9" r="3"/><path d="M2.5 20c.8-3.6 3-5.5 5.5-5.5s4.7 1.9 5.5 5.5M10.5 14.7c.8-2.6 2.8-4 5.5-4s4.9 1.6 5.5 4.3"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" focusable="false"><circle cx="8" cy="9" r="3"/><circle cx="16" cy="9" r="3"/><path d="M2.5 20c.8-3.6 3-5.5 5.5-5.5s4.7 1.9 5.5 5.5M10.5 14.7c.8-2.6 2.8-4 5.5-4s4.9 1.6 5.5 4.3"/></svg>
         <span>קהילה</span>
       </button>
     </nav>

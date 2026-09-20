@@ -49,11 +49,11 @@
       <div class="card" style="gap:14px;">
         <div class="card-meta">${escapeHTML(promptText)}</div>
         <form class="auth-form" style="display:flex; flex-direction:column; gap:10px;">
-          <input type="email" required placeholder="האימייל שלך" class="auth-email"
+          <input type="email" required placeholder="האימייל שלך" aria-label="האימייל שלך" class="auth-email"
             style="background:var(--surface); border:1px solid var(--border-strong); border-radius:9999px; padding:0 18px; height:44px; color:var(--text); font-family:inherit; font-size:14px;">
           <button type="submit" class="btn-primary" style="height:44px;">שליחת לינק כניסה</button>
         </form>
-        <div class="auth-status"></div>
+        <div class="auth-status" aria-live="polite"></div>
       </div>`;
   }
 
@@ -64,8 +64,8 @@
     // ok-tone check icon in the ביקורת AI cards.
     return `
       <div style="display:flex; align-items:center; gap:8px; background:var(--green-bg); border-radius:9999px; padding:8px 14px;">
-        <span style="width:20px;height:20px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        <span style="width:20px;height:20px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0;" aria-hidden="true">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M20 6L9 17l-5-5"/></svg>
         </span>
         <span class="card-meta" style="font-size:12.5px; color:var(--text); font-weight:600;">${escapeHTML(text)}</span>
       </div>`;
@@ -104,11 +104,11 @@
         <div class="card-title">תובנה משפטית קצרה כל בוקר</div>
         <div class="card-meta">${escapeHTML(NEWSLETTER_CONSENT_TEXT)}</div>
         <form class="newsletter-form" style="display:flex; flex-direction:column; gap:10px;">
-          <input type="email" required placeholder="האימייל שלך" class="newsletter-email"
+          <input type="email" required placeholder="האימייל שלך" aria-label="האימייל שלך" class="newsletter-email"
             style="background:var(--surface); border:1px solid var(--border-strong); border-radius:9999px; padding:0 18px; height:44px; color:var(--text); font-family:inherit; font-size:14px;">
           <button type="submit" class="btn-primary" style="height:44px;">הרשמה לעדכון היומי</button>
         </form>
-        <div class="newsletter-status"></div>
+        <div class="newsletter-status" aria-live="polite"></div>
       </div>`;
   }
 
@@ -170,12 +170,12 @@
           ${c.is_lead ? '<span class="pill pill-amber">ליד</span>' : '<span class="pill pill-green">לקוח</span>'}
         </div>
         <span class="card-meta">${escapeHTML(c.phone || '')} · ${timeAgo(c.created_at)}</span>
-        <button type="button" class="vault-toggle" data-vault="${i}" aria-expanded="false" style="display:flex; align-items:center; gap:6px; background:none; border:none; padding:4px 0 0; color:var(--text-secondary); font-size:12.5px; font-weight:600; width:fit-content;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7h6l2 2h10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/></svg>
+        <button type="button" class="vault-toggle" data-vault="${i}" aria-expanded="false" aria-controls="vault-body-${i}" style="display:flex; align-items:center; gap:6px; background:none; border:none; padding:4px 0 0; color:var(--text-secondary); font-size:12.5px; font-weight:600; width:fit-content;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" focusable="false"><path d="M3 7h6l2 2h10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/></svg>
           תיק מסמכים
-          <svg class="vault-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transition:transform .15s ease;"><path d="M6 9l6 6 6-6"/></svg>
+          <svg class="vault-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transition:transform .15s ease;" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6"/></svg>
         </button>
-        <div class="vault-body" data-vault-body="${i}">
+        <div class="vault-body" id="vault-body-${i}" data-vault-body="${i}">
           ${matterVaultHTML(i)}
         </div>
       </div>`).join('');
@@ -195,7 +195,7 @@
     const rows = VAULT_DOCS.map((d) => `
       <div class="card-row" style="gap:8px;">
         <span style="display:flex; align-items:center; gap:8px; font-size:13px;">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-tertiary)" stroke-width="1.7"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-tertiary)" stroke-width="1.7" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
           ${escapeHTML(d.name)}
         </span>
         <span class="pill pill-${d.tone}">${d.label}</span>

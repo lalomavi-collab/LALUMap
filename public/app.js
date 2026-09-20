@@ -10,12 +10,21 @@
     if (!SCREENS.includes(name)) name = SCREENS[0];
 
     document.querySelectorAll('.screen').forEach((el) => {
-      el.classList.toggle('active', el.id === `screen-${name}`);
+      const active = el.id === `screen-${name}`;
+      el.classList.toggle('active', active);
+      // Belt-and-suspenders alongside the CSS display toggle above: the
+      // HTML spec only allows more than one <main> per document when every
+      // extra one carries `hidden` (we have four, one visible at a time).
+      el.hidden = !active;
     });
 
     navItems.forEach((btn) => {
       const active = btn.dataset.screen === name;
       btn.classList.toggle('active', active);
+      // aria-current carries the "which screen am I on" signal to AT users;
+      // the active/inactive classes alone only reach sighted users.
+      if (active) btn.setAttribute('aria-current', 'page');
+      else btn.removeAttribute('aria-current');
       if (active) title.textContent = btn.dataset.title;
     });
 
@@ -84,8 +93,8 @@
     const offset = Math.round(CIRC * (1 - mode.score / 100));
     contentEl.innerHTML = `
       <div class="card" style="flex-direction: row; align-items: center; gap: 12px;">
-        <div style="width:38px;height:38px;border-radius:10px;background:${tone.bg};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${tone.fg}" stroke-width="2" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
+        <div style="width:38px;height:38px;border-radius:10px;background:${tone.bg};display:flex;align-items:center;justify-content:center;flex-shrink:0;" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${tone.fg}" stroke-width="2" stroke-linecap="round" focusable="false"><path d="M20 6L9 17l-5-5"/></svg>
         </div>
         <div>
           <div class="card-title">${mode.matter}</div>
@@ -94,7 +103,7 @@
       </div>
 
       <div class="ring-wrap">
-        <svg width="148" height="148" viewBox="0 0 148 148">
+        <svg width="148" height="148" viewBox="0 0 148 148" role="img" aria-label="${mode.scoreLabel}: ${mode.score} מתוך 100, ${tone.label}" focusable="false">
           <circle cx="74" cy="74" r="62" fill="none" stroke="rgba(26,24,21,.08)" stroke-width="10"/>
           <circle cx="74" cy="74" r="62" fill="none" stroke="${tone.fg}" stroke-width="10" stroke-linecap="round"
             stroke-dasharray="${CIRC}" stroke-dashoffset="${offset}" transform="rotate(-90 74 74)"/>
@@ -170,7 +179,9 @@
   const cardsEl = document.getElementById('knowledge-cards');
   if (!tabsEl || !cardsEl) return;
 
-  const bookmarkIcon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="1.6"><path d="M6 3h12v18l-6-4-6 4V3z"/></svg>';
+  // Decorative and inert (no click handler wired to it yet), so hidden from
+  // assistive tech rather than announced as an unlabelled, non-functional button.
+  const bookmarkIcon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="1.6" aria-hidden="true" focusable="false"><path d="M6 3h12v18l-6-4-6 4V3z"/></svg>';
 
   function render(domain) {
     cardsEl.innerHTML = domain.cards.map((c) => `
@@ -182,11 +193,14 @@
       </div>`).join('');
   }
 
-  tabsEl.innerHTML = DOMAINS.map((d, i) => `<button type="button" class="tab${i === 0 ? ' active' : ''}" data-domain="${d.id}">${d.label}</button>`).join('');
+  tabsEl.innerHTML = DOMAINS.map((d, i) => `<button type="button" class="tab${i === 0 ? ' active' : ''}" data-domain="${d.id}" role="tab" aria-selected="${i === 0}">${d.label}</button>`).join('');
   tabsEl.addEventListener('click', (e) => {
     const btn = e.target.closest('.tab');
     if (!btn) return;
-    tabsEl.querySelectorAll('.tab').forEach((t) => t.classList.toggle('active', t === btn));
+    tabsEl.querySelectorAll('.tab').forEach((t) => {
+      t.classList.toggle('active', t === btn);
+      t.setAttribute('aria-selected', String(t === btn));
+    });
     render(DOMAINS.find((d) => d.id === btn.dataset.domain));
   });
   render(DOMAINS[0]);
