@@ -136,8 +136,20 @@
 
     <div id="lex-dialog" class="lex-dialog" role="dialog" aria-modal="true" aria-labelledby="lex-title" hidden>
       <div class="lex-header">
-        <h2 id="lex-title" class="display" style="font-size:18px;">LALUM LEX</h2>
-        <button id="lex-close" type="button" aria-label="סגירת הצ׳אט" style="background:none; border:none; color:var(--text-secondary); width:32px; height:32px; display:flex; align-items:center; justify-content:center;">
+        <div>
+          <h2 id="lex-title" class="display" style="font-size:18px;">LALUM LEX</h2>
+          <!-- Names, on screen, the discipline the system prompt already
+               enforces (strict grounding, verified sources only, never a
+               fabricated citation): a trust claim only means something when
+               it's stated where the visitor actually is, not just in a
+               README or a prompt nobody reads. See Thomson Reuters'
+               public "Fiduciary-Grade AI" standard for the same idea done
+               at a much bigger scale: naming and standing behind the
+               grounding discipline as a stated product commitment,
+               not just an internal implementation detail. -->
+          <p style="margin:2px 0 0; font-size:11px; color:var(--text-secondary);">עקרון ההצמדה של LALUM: מבוסס רק על מקורות מאומתים</p>
+        </div>
+        <button id="lex-close" type="button" aria-label="סגירת הצ׳אט" style="background:none; border:none; color:var(--text-secondary); width:32px; height:32px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </div>
