@@ -12,6 +12,14 @@ PWA for [Lalumapp.com](https://lalumapp.com).
 - `public/config.js` — public Supabase project URL + publishable (anon) key. Safe to expose client-side — see below.
 - `public/data.js` — Supabase Auth (magic link) + data for the two real-data screens.
 - `public/service-worker.js` — minimal cache-the-shell service worker (Chrome's install prompt expects a fetch handler).
+- `public/privacy.html`, `public/terms.html`, `public/security.html`, `public/accessibility.html`,
+  `public/cookies.html` — the legal-links row exposed from the header on every screen (`.legal-links` in
+  `index.html`). Each one is accurate to what the app actually does today, not a generic template; `privacy.html`,
+  `terms.html` and `security.html` are marked as drafts pending attorney sign-off (same pattern as the rest of this
+  file's legal content), while `accessibility.html` is written as an honest, dated statement of what has and hasn't
+  been done rather than a claim of certified compliance, per what Israeli accessibility regulations actually expect
+  from that document. `cookies.html` currently has nothing to toggle (no analytics in this app yet — see below), so
+  it says that plainly instead of showing a fake settings switch.
 
 ## Real data — what's connected and why it's safe to be public code
 

@@ -85,6 +85,17 @@ button { font-family: inherit; cursor: pointer; }
 
 .app-header .display { font-size: 26px; }
 
+/* Wraps to a second line on narrow phones instead of overflowing or
+   shrinking the title (verified at 320px/375px); each link keeps a real
+   min-height tap target via padding, not just line-height, per mobile
+   touch-target guidance. */
+.legal-links { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 2px 10px; max-width: 190px; }
+.legal-links a {
+  font-size: 11px; color: var(--text-secondary); text-decoration: underline;
+  padding: 4px 0; display: inline-block;
+}
+.legal-links a:hover { color: var(--text); }
+
 .avatar {
   width: 36px; height: 36px; border-radius: 50%;
   background: var(--brand-tint); border: 1px solid var(--border-strong);
