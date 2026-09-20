@@ -46,7 +46,15 @@
            instead of each getting its own screen. Still sample/static data
            (see README — this screen has no schema behind it yet); the
            switcher itself and the tone system (ok/warn/high, matching the
-           risk-badge language already live on lalumapp.com) are real. -->
+           risk-badge language already live on lalumapp.com) are real. The
+           notice below is not decorative: every score and finding on this
+           screen is invented placeholder data, and it needs to say so on
+           the screen itself, not only in the README, so nobody mistakes a
+           sample risk score for a real one. -->
+      <div class="card" style="flex-direction: row; align-items: center; gap: 10px; background: var(--amber-bg); border-color: transparent;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--amber-text)" stroke-width="2" aria-hidden="true" focusable="false" style="flex-shrink:0;"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+        <span style="font-size: 12.5px; font-weight: 600; color: var(--amber-text);">תצוגת לדוגמה: הציונים והממצאים כאן אינם מבוססים על בדיקה אמיתית.</span>
+      </div>
       <div class="tabs" id="risk-tabs" role="tablist" aria-label="תחום ביקורת"></div>
       <div id="risk-content"></div>
     </main>
@@ -69,7 +77,15 @@
 
       <!-- Domain filter: same four practice pillars as ביקורת AI, so the
            same mental model ("pick your area") carries across screens.
-           Still sample cards (2 per domain) — only the filter is real. -->
+           Still sample cards (2 per domain) — only the filter is real. The
+           rulings shown are invented placeholders (see README), so, same
+           reasoning as the ביקורת AI notice: it says so on the screen
+           itself, not just in the README, since these are styled exactly
+           like a real citation would be. -->
+      <div class="card" style="flex-direction: row; align-items: center; gap: 10px; background: var(--amber-bg); border-color: transparent;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--amber-text)" stroke-width="2" aria-hidden="true" focusable="false" style="flex-shrink:0;"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+        <span style="font-size: 12.5px; font-weight: 600; color: var(--amber-text);">תצוגת לדוגמה: פרטי הפסיקה כאן אינם מקורות אמיתיים.</span>
+      </div>
       <div class="tabs" id="knowledge-domains" role="tablist" aria-label="תחום"></div>
       <div id="knowledge-cards"></div>
 
@@ -109,12 +125,37 @@
         <span>קהילה</span>
       </button>
     </nav>
+
+    <!-- LALUM LEX — reuses the existing lalum-assistant Edge Function (see
+         lex.js): same verified case-law database and grounding rules as the
+         lalumapp.com site's own chat widget, not a second assistant. -->
+    <button id="lex-fab" type="button" class="lex-fab" aria-haspopup="dialog" aria-expanded="false" aria-controls="lex-dialog">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" aria-hidden="true" focusable="false"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+      <span class="sr-only">שאלו את LALUM LEX</span>
+    </button>
+
+    <div id="lex-dialog" class="lex-dialog" role="dialog" aria-modal="true" aria-labelledby="lex-title" hidden>
+      <div class="lex-header">
+        <h2 id="lex-title" class="display" style="font-size:18px;">LALUM LEX</h2>
+        <button id="lex-close" type="button" aria-label="סגירת הצ׳אט" style="background:none; border:none; color:var(--text-secondary); width:32px; height:32px; display:flex; align-items:center; justify-content:center;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="lex-disclaimer">מידע כללי בלבד, אינו מהווה ייעוץ משפטי ואינו יוצר יחסי עורך דין-לקוח.</div>
+      <div id="lex-messages" class="lex-messages" role="log" aria-live="polite" aria-label="שיחה עם LALUM LEX"></div>
+      <form id="lex-form" class="lex-form">
+        <label for="lex-input" class="sr-only">הקלידו שאלה</label>
+        <input id="lex-input" type="text" placeholder="שאלה, או פקודה כמו ‎/recir" autocomplete="off">
+        <button type="submit" class="btn-primary" style="width:auto; height:40px; padding:0 18px;">שליחה</button>
+      </form>
+    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="/config.js"></script>
   <script src="/app.js"></script>
   <script src="/data.js"></script>
+  <script src="/lex.js"></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {

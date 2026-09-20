@@ -191,3 +191,61 @@ button { font-family: inherit; cursor: pointer; }
 
 .vault-body { display: none; flex-direction: column; gap: 6px; padding-top: 4px; border-top: 1px solid var(--border); margin-top: 4px; }
 .vault-body.open { display: flex; }
+
+/* LALUM LEX chat widget. Anchored to .app-shell (position:relative, already
+   the viewport-height column bottom-nav centers itself against) rather than
+   the viewport directly, so it stays bound to the visual app column instead
+   of drifting to the real screen edge on a wide desktop viewport. */
+.lex-fab {
+  position: absolute; bottom: calc(var(--nav-h) + 16px); inset-inline-end: 16px;
+  width: 56px; height: 56px; border-radius: 50%; background: var(--brand);
+  border: none; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 14px rgba(26, 24, 21, 0.22); z-index: 50;
+}
+.lex-fab svg { width: 24px; height: 24px; }
+.lex-fab:hover { background: var(--brand-hover); }
+.lex-fab:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+
+.lex-dialog {
+  position: absolute; inset: 0; z-index: 60; background: var(--bg);
+  display: flex; flex-direction: column;
+}
+/* Without this, [hidden] loses to the class rule above: both are
+   specificity (0,1,0), and an author rule beats the UA default
+   `[hidden] { display: none }` at an equal specificity tie. */
+.lex-dialog[hidden] { display: none; }
+.lex-header {
+  height: var(--header-h); flex-shrink: 0; display: flex; align-items: center;
+  justify-content: space-between; padding: 0 18px; border-bottom: 1px solid var(--border);
+}
+.lex-disclaimer {
+  font-size: 11.5px; color: var(--text-secondary); background: var(--brand-tint);
+  padding: 8px 18px; flex-shrink: 0;
+}
+.lex-messages {
+  flex: 1; overflow-y: auto; padding: 16px 18px; display: flex;
+  flex-direction: column; gap: 10px;
+}
+.lex-bubble {
+  max-width: 88%; padding: 10px 14px; border-radius: 14px; font-size: 14px;
+  line-height: 1.55; white-space: pre-wrap;
+}
+.lex-bubble-user {
+  align-self: flex-end; background: var(--brand); color: #fff; border-end-end-radius: 4px;
+}
+.lex-bubble-assistant {
+  align-self: flex-start; background: var(--surface); border: 1px solid var(--border);
+  color: var(--text); border-end-start-radius: 4px;
+}
+.lex-status { align-self: flex-start; font-size: 12.5px; color: var(--text-tertiary); padding: 0 4px; }
+.lex-form {
+  flex-shrink: 0; display: flex; gap: 8px; align-items: center; padding: 12px 18px;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--border); background: var(--surface);
+}
+.lex-form input {
+  flex: 1; height: 44px; border-radius: 9999px; background: var(--bg);
+  border: 1px solid var(--border-strong); padding: 0 16px; color: var(--text);
+  font-family: inherit; font-size: 14px;
+}
+.lex-form input:disabled { opacity: 0.6; }
