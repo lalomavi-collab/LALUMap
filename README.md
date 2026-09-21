@@ -44,6 +44,10 @@ The **published Artifact mockup** (Claude Design canvas / the standalone `LALUM 
 
 This sandbox's outbound network policy blocks `cdn.jsdelivr.net` and `*.supabase.co`, so the Supabase Auth flow and data fetch could not be exercised end-to-end from here — only the graceful-failure path (library fails to load → visible error, not a blank screen) was verified. **Before relying on this in production**, open the deployed page in a normal browser and confirm: the magic-link sign-in actually arrives by email, an admin session shows real contacts, a non-admin session shows the "no permission" state (not an error), and a signed-in user can post to and see the community feed.
 
+## CI (`.github/workflows/check.yml`)
+
+There's no build step here (framework-free static files), so nothing else catches a broken commit before it ships. `scripts/check.mjs` (pure Node, no dependencies) runs on every push/PR and checks: JS syntax, duplicate `id`s per page, forbidden em/en-dashes in real page content per the punctuation rule (never inside a comment), and that every `href` resolves — a same-page `#anchor` to an existing `id`, a `/path` to an existing file. All four are checks a manual audit found real, already-shipped violations from; this makes sure the next one doesn't ship silently. Run it locally with `node scripts/check.mjs`.
+
 ## Next steps
 
 - Wire ביקורת AI and מרכז ידע to real tables when there's a schema for them; they're still static/sample. Deliberately not attempted without a live decision from the operator: both would need new tables/RLS policies on `lalum-app`'s shared production database (the same project handling billing, calls, and an unrelated email-routing system), which isn't a change to make unattended.
