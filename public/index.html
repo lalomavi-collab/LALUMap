@@ -41,12 +41,43 @@
     </header>
 
     <div id="main-content" tabindex="-1">
-    <!-- ניהול משרד — מחובר ל-lalum_contacts האמיתית, קריאה מוגבלת ל-admin ע"י RLS -->
+    <!-- ניהול משרד — מחובר ל-lalum_contacts האמיתית, קריאה מוגבלת ל-admin ע"י RLS.
+         "לקוח חדש" מבצע INSERT אמיתי, מוגן במדיניות admin_insert_contacts
+         (זהה בעקרונה למדיניות הקריאה: lalum_is_admin() בלבד). -->
     <main class="screen active" id="screen-practice" aria-labelledby="screen-title">
-      <button class="btn-primary" type="button" disabled title="יצירת לקוח עדיין לא מחוברת">
+      <button class="btn-primary" type="button" id="new-client-toggle" aria-expanded="false" aria-controls="new-client-form-card">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14"/></svg>
         לקוח חדש
       </button>
+
+      <div class="card" id="new-client-form-card" hidden style="gap:14px;">
+        <form id="new-client-form" style="display:flex; flex-direction:column; gap:10px;">
+          <div>
+            <label for="new-client-name" class="sr-only">שם מלא</label>
+            <input id="new-client-name" type="text" required placeholder="שם מלא" autocomplete="name"
+              style="width:100%; background:var(--surface); border:1px solid var(--border-strong); border-radius:9999px; padding:0 18px; height:44px; color:var(--text); font-family:inherit; font-size:14px;">
+          </div>
+          <div>
+            <label for="new-client-phone" class="sr-only">טלפון</label>
+            <input id="new-client-phone" type="tel" required placeholder="טלפון" autocomplete="tel" dir="ltr"
+              style="width:100%; background:var(--surface); border:1px solid var(--border-strong); border-radius:9999px; padding:0 18px; height:44px; color:var(--text); font-family:inherit; font-size:14px; text-align:right;">
+          </div>
+          <fieldset style="border:none; padding:0; margin:0; display:flex; gap:16px;">
+            <legend class="sr-only">סוג</legend>
+            <label style="display:flex; align-items:center; gap:6px; font-size:13.5px;">
+              <input type="radio" name="new-client-kind" value="lead" checked> ליד
+            </label>
+            <label style="display:flex; align-items:center; gap:6px; font-size:13.5px;">
+              <input type="radio" name="new-client-kind" value="client"> לקוח
+            </label>
+          </fieldset>
+          <div style="display:flex; gap:10px;">
+            <button type="submit" class="btn-primary" style="height:44px;">שמירה</button>
+            <button type="button" id="new-client-cancel" style="height:44px; background:none; border:1px solid var(--border-strong); border-radius:9999px; padding:0 18px; color:var(--text-secondary); font-family:inherit; font-size:14px;">ביטול</button>
+          </div>
+        </form>
+        <div id="new-client-status" aria-live="polite"></div>
+      </div>
 
       <div class="section-label">לקוחות (נתונים אמיתיים)</div>
       <div id="clients-auth-gate" aria-live="polite"></div>

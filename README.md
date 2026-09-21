@@ -25,7 +25,7 @@ PWA for [Lalumapp.com](https://lalumapp.com).
 
 The Supabase project behind this app (`lalum-app`) is the firm's live backend — it already holds real client/consultation/billing data unrelated to this screen. Only two tables are wired into the UI, and both rely on Postgres Row Level Security, not UI hiding, to keep data private:
 
-- **`lalum_contacts`** (לקוחות screen) — `SELECT` restricted to `lalum_is_admin()`. An unauthenticated or non-admin session gets zero rows back from the database itself, regardless of what the client code asks for.
+- **`lalum_contacts`** (לקוחות screen) — `SELECT` restricted to `lalum_is_admin()` (`admin_read_contacts`). `INSERT` (the "לקוח חדש" form) is gated the same way, by its own policy (`admin_insert_contacts`, `with check (lalum_is_admin())`): a non-admin session is rejected at the database itself even if it somehow reached the form. No `UPDATE`/`DELETE` policy exists — editing or removing a contact isn't wired up, on either the UI or the database side.
 - **`lalum_group_chat_messages`** (קהילה screen) — `SELECT`/`INSERT` require any signed-in session (`auth.uid() IS NOT NULL`); not public.
 
 Because RLS enforces this at the database, the anon/publishable key in `config.js` is safe to ship in public code (including this public repo) — it identifies the project, it does not grant access. **The one thing that must never happen is adding a table or policy that lets the `anon` role read either table directly** — always go through an authenticated session.
@@ -44,7 +44,6 @@ This sandbox's outbound network policy blocks `cdn.jsdelivr.net` and `*.supabase
 
 ## Next steps
 
-- Replace the disabled "לקוח חדש" button with a real create flow (currently inert — connecting *read* access was this round's scope).
 - Wire ביקורת AI and מרכז ידע to real tables when there's a schema for them; they're still static/sample.
 - Extend `service-worker.js`'s cache list as routes/assets grow.
 - Consider enabling Supabase Auth's leaked-password protection and reviewing the `pg_net`-in-`public`-schema advisory noted by `get_advisors` — both pre-date this change but are worth a look.

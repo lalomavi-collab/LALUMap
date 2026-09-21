@@ -11,6 +11,11 @@
   const communityList = document.getElementById('community-list');
   const communityComposer = document.getElementById('community-composer');
   const communityInput = document.getElementById('community-input');
+  const newClientToggle = document.getElementById('new-client-toggle');
+  const newClientCard = document.getElementById('new-client-form-card');
+  const newClientForm = document.getElementById('new-client-form');
+  const newClientCancel = document.getElementById('new-client-cancel');
+  const newClientStatus = document.getElementById('new-client-status');
 
   // Never fail silently: if the Supabase library or config didn't load
   // (CDN hiccup, offline, ad-blocker), say so instead of leaving the
@@ -139,6 +144,65 @@
   }
 
   wireNewsletterForm();
+
+  // "לקוח חדש": a real INSERT into lalum_contacts, protected by the
+  // admin_insert_contacts RLS policy (mirrors admin_read_contacts — only
+  // lalum_is_admin() can write). A non-admin session that somehow reaches
+  // this form still gets rejected at the database itself, not just hidden
+  // by the UI; the button is only ever shown to a session that already
+  // passed the read-side admin check by virtue of seeing the client list.
+  function closeNewClientForm() {
+    newClientCard.hidden = true;
+    newClientToggle.setAttribute('aria-expanded', 'false');
+    newClientForm.reset();
+    newClientStatus.innerHTML = '';
+  }
+
+  function wireNewClientForm() {
+    if (!newClientToggle || !newClientForm) return;
+
+    newClientToggle.addEventListener('click', () => {
+      const opening = newClientCard.hidden;
+      newClientCard.hidden = !opening;
+      newClientToggle.setAttribute('aria-expanded', String(opening));
+      if (opening) document.getElementById('new-client-name').focus();
+      else { newClientForm.reset(); newClientStatus.innerHTML = ''; }
+    });
+
+    newClientCancel.addEventListener('click', closeNewClientForm);
+
+    newClientForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const full_name = document.getElementById('new-client-name').value.trim();
+      const phone = document.getElementById('new-client-phone').value.trim();
+      const is_lead = newClientForm.querySelector('input[name="new-client-kind"]:checked').value === 'lead';
+      if (!full_name || !phone) return;
+
+      const submitBtn = newClientForm.querySelector('button[type="submit"]');
+      submitBtn.disabled = true;
+      newClientStatus.innerHTML = authStatusHTML('sending', 'שומר...');
+
+      const { error } = await client.from('lalum_contacts').insert({ full_name, phone, is_lead });
+
+      submitBtn.disabled = false;
+      if (error) {
+        // 23505: unique_violation — this table's own `phone` column is
+        // declared unique, so a repeat number is the one error worth a
+        // specific message; everything else surfaces the raw reason
+        // (RLS denial included) rather than guessing at one.
+        const message = error.code === '23505'
+          ? 'מספר הטלפון הזה כבר קיים במערכת.'
+          : `שגיאה בשמירה: ${error.message}`;
+        newClientStatus.innerHTML = authStatusHTML('error', message);
+        return;
+      }
+
+      closeNewClientForm();
+      loadClients(currentSession);
+    });
+  }
+
+  wireNewClientForm();
 
   async function loadClients(session) {
     if (!session) {
