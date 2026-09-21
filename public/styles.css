@@ -21,6 +21,16 @@
   --text-secondary: rgba(26, 24, 21, 0.66);
   --text-tertiary: rgba(26, 24, 21, 0.62);
   --brand: #6B8F6E;
+  /* Originally a hover-darken shade only. Also doubles as: (a) the text
+     colour for --brand used as text on a light background (nav-item.active,
+     .tag) — --brand itself measured fine there, this isn't the fix target;
+     and (b) the resting (not just hover) background for white text
+     (.btn-primary, .tab.active, .skip-link:focus, .lex-bubble-user) — those
+     measured ~3.6:1 with white text against plain --brand, under the 4.5:1
+     floor, while --brand-hover clears ~4.8:1. Same reasoning as
+     --amber-text/--green-text/--red-text below: a darker variant for text
+     use, without touching --brand's own value everywhere else it already
+     works (icons, the focus outline, .bar-fill, .lex-fab). */
   --brand-hover: #5A7A5D;
   --brand-tint: #E7EDE4;
   --amber: #B5811A;
@@ -99,7 +109,11 @@ button { font-family: inherit; cursor: pointer; }
 .avatar {
   width: 36px; height: 36px; border-radius: 50%;
   background: var(--brand-tint); border: 1px solid var(--border-strong);
+  padding: 0; display: flex; align-items: center; justify-content: center;
+  color: var(--text-secondary); font: inherit; cursor: pointer;
 }
+.avatar:hover { background: var(--border-strong); }
+.avatar[hidden] { display: none; }
 
 /* Skip-link target and the four .screen elements' actual DOM parent (was
    .app-shell directly; wrapping them doesn't change how they need to lay
@@ -123,15 +137,15 @@ button { font-family: inherit; cursor: pointer; }
 .screen.active { display: flex; }
 
 .btn-primary {
-  height: 52px; border-radius: 9999px; background: var(--brand);
+  height: 52px; border-radius: 9999px; background: var(--brand-hover);
   border: none; display: flex; align-items: center; justify-content: center;
   gap: 8px; color: #fff; font-weight: 700; font-size: 15px; width: 100%;
-  transition: background 0.15s ease;
+  transition: filter 0.15s ease;
 }
-.btn-primary:hover { background: var(--brand-hover); }
+.btn-primary:hover { filter: brightness(0.92); }
 .btn-primary:disabled { background: var(--border-strong); color: var(--text-tertiary); }
 .btn-primary:focus-visible, .nav-item:focus-visible, .card:focus-visible,
-.tab:focus-visible, .vault-toggle:focus-visible {
+.tab:focus-visible, .vault-toggle:focus-visible, .avatar:focus-visible {
   outline: 2px solid var(--brand); outline-offset: 2px;
 }
 
@@ -144,6 +158,13 @@ button { font-family: inherit; cursor: pointer; }
   border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 8px;
   box-shadow: 0 1px 3px rgba(26, 24, 21, 0.05);
 }
+/* Same [hidden]-vs-class-rule tie as .lex-dialog/.a11y-panel below: without
+   this, #new-client-form-card (class="card" ... hidden) never actually
+   hides, since the .card rule's `display: flex` (an author rule) beats the
+   UA default `[hidden] { display: none }` even while the attribute is set.
+   Toggling `hidden` in JS still "worked" in the sense of adding/removing
+   the attribute; it just never hid anything on screen. */
+.card[hidden] { display: none; }
 .card-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .card-title { font-weight: 600; font-size: 15px; }
 .card-meta { font-size: 13px; color: var(--text-secondary); }
@@ -163,7 +184,7 @@ button { font-family: inherit; cursor: pointer; }
 .skip-link:focus {
   position: fixed; width: auto; height: auto; margin: 0; overflow: visible;
   clip: auto; white-space: normal; top: 8px; inset-inline-start: 8px; z-index: 100;
-  background: var(--brand); color: #fff; font-weight: 700; font-size: 14px;
+  background: var(--brand-hover); color: #fff; font-weight: 700; font-size: 14px;
   padding: 10px 18px; border-radius: 9999px;
 }
 
@@ -179,7 +200,7 @@ button { font-family: inherit; cursor: pointer; }
   background: none; border: none; display: flex; flex-direction: column;
   align-items: center; gap: 4px; color: var(--text-tertiary);
 }
-.nav-item.active { color: var(--brand); font-weight: 600; }
+.nav-item.active { color: var(--brand-hover); font-weight: 600; }
 .nav-item svg { width: 22px; height: 22px; }
 .nav-item span { font-size: 10px; }
 
@@ -196,9 +217,9 @@ button { font-family: inherit; cursor: pointer; }
 
 .tabs { display: flex; gap: 8px; flex-wrap: wrap; }
 .tab { padding: 8px 16px; border-radius: 9999px; font-size: 13px; color: var(--text-secondary); background: none; border: 1px solid transparent; }
-.tab.active { background: var(--brand); color: #fff; font-weight: 600; }
+.tab.active { background: var(--brand-hover); color: #fff; font-weight: 600; }
 
-.tag { font-size: 10.5px; font-weight: 600; padding: 3px 9px; border-radius: 9999px; background: var(--brand-tint); color: var(--brand); display: inline-block; }
+.tag { font-size: 10.5px; font-weight: 600; padding: 3px 9px; border-radius: 9999px; background: var(--brand-tint); color: var(--brand-hover); display: inline-block; }
 
 .vault-body { display: none; flex-direction: column; gap: 6px; padding-top: 4px; border-top: 1px solid var(--border); margin-top: 4px; }
 .vault-body.open { display: flex; }
@@ -242,7 +263,7 @@ button { font-family: inherit; cursor: pointer; }
   line-height: 1.55; white-space: pre-wrap;
 }
 .lex-bubble-user {
-  align-self: flex-end; background: var(--brand); color: #fff; border-end-end-radius: 4px;
+  align-self: flex-end; background: var(--brand-hover); color: #fff; border-end-end-radius: 4px;
 }
 .lex-bubble-assistant {
   align-self: flex-start; background: var(--surface); border: 1px solid var(--border);

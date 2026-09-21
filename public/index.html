@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>LALUM</title>
-  <meta name="description" content="LALUM Legal Engine — ניהול משרד, ביקורת סיכון AI ומרכז ידע נדל&quot;ן">
+  <meta name="description" content="LALUM Legal Engine: ניהול משרד, ביקורת סיכון AI ומרכז ידע נדל&quot;ן">
 
   <!-- PWA -->
   <link rel="manifest" href="/manifest.json">
@@ -36,7 +36,7 @@
           <a href="/accessibility.html">נגישות</a>
           <a href="/cookies.html">עוגיות</a>
         </nav>
-        <div class="avatar" aria-hidden="true"></div>
+        <button type="button" id="header-avatar" class="avatar" hidden aria-label="התנתקות"></button>
       </div>
     </header>
 
@@ -85,7 +85,7 @@
     </main>
 
     <!-- ביקורת AI -->
-    <main class="screen" id="screen-risk" aria-labelledby="screen-title">
+    <main class="screen" id="screen-risk" aria-labelledby="screen-title" hidden>
       <!-- Mode switcher: the four practice pillars share this one audit view
            instead of each getting its own screen. Still sample/static data
            (see README — this screen has no schema behind it yet); the
@@ -104,7 +104,7 @@
     </main>
 
     <!-- מרכז ידע -->
-    <main class="screen" id="screen-knowledge" aria-labelledby="screen-title">
+    <main class="screen" id="screen-knowledge" aria-labelledby="screen-title" hidden>
       <div class="search-bar">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
         <span>חיפוש נושא, סעיף, פסק דין</span>
@@ -139,7 +139,7 @@
     </main>
 
     <!-- קהילה — מחובר ל-lalum_group_chat_messages, קריאה/כתיבה לכל משתמש מחובר -->
-    <main class="screen" id="screen-community" aria-labelledby="screen-title">
+    <main class="screen" id="screen-community" aria-labelledby="screen-title" hidden>
       <div id="community-auth-gate" aria-live="polite"></div>
       <form id="community-composer" class="card" style="flex-direction:row; gap:8px; align-items:center; display:none;">
         <label for="community-input" class="sr-only">הודעה לקהילה</label>

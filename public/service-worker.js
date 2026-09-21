@@ -8,18 +8,25 @@
 // network for everything that makes it a working page. Bumping the cache
 // name (not just its contents) is what makes activate's own cleanup below
 // replace a v1 cache already sitting in a returning visitor's browser.
-const CACHE_NAME = 'lalum-shell-v2';
+// v3: dropped /logo-mark.png (precached but referenced by nothing in the
+// app; dead weight in the offline cache) and added the three icon files
+// index.html's own <head> actually links (apple-touch-icon + both
+// favicons) — v2 cached every CSS/JS the shell needs but still missed
+// these, so a fully offline launch still had to hit the network for them.
+const CACHE_NAME = 'lalum-shell-v3';
 const APP_SHELL = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/logo-mark.png',
   '/styles.css',
   '/config.js',
   '/app.js',
   '/data.js',
   '/lex.js',
   '/a11y.js',
+  '/icons/apple-touch-icon.png',
+  '/icons/favicon-32.png',
+  '/icons/favicon-16.png',
 ];
 
 self.addEventListener('install', (event) => {

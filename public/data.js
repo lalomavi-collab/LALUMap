@@ -16,6 +16,7 @@
   const newClientForm = document.getElementById('new-client-form');
   const newClientCancel = document.getElementById('new-client-cancel');
   const newClientStatus = document.getElementById('new-client-status');
+  const headerAvatar = document.getElementById('header-avatar');
 
   // Never fail silently: if the Supabase library or config didn't load
   // (CDN hiccup, offline, ad-blocker), say so instead of leaving the
@@ -30,6 +31,21 @@
   }
 
   const client = window.supabase.createClient(window.LALUM_SUPABASE_URL, window.LALUM_SUPABASE_ANON_KEY);
+
+  // Every call below only ever branches on the resolved `{ error }` field;
+  // none catch a rejected promise. A thrown network error (offline mid
+  // request, DNS failure, CORS) would otherwise leave the UI stuck exactly
+  // where it was ("טוען...", "שולח...", a disabled submit button never
+  // re-enabled), since none of the code after the `await` runs. Wrapping
+  // each call in this converts a thrown rejection into the same
+  // `{ data: null, error }` shape every caller already knows how to render.
+  async function safely(promise) {
+    try {
+      return await promise;
+    } catch {
+      return { data: null, error: { message: 'שגיאת רשת. בדקו את החיבור ונסו שוב.', code: 'network_error' } };
+    }
+  }
 
   function escapeHTML(s) {
     const d = document.createElement('div');
@@ -85,13 +101,13 @@
       const email = form.querySelector('.auth-email').value.trim();
       if (!email) return;
       status.innerHTML = authStatusHTML('sending', 'שולח...');
-      const { error } = await client.auth.signInWithOtp({
+      const { error } = await safely(client.auth.signInWithOtp({
         email,
         options: { emailRedirectTo: window.location.origin },
-      });
+      }));
       status.innerHTML = error
         ? authStatusHTML('error', 'שגיאה: ' + error.message)
-        : authStatusHTML('ok', 'לינק כניסה נשלח — בדקו את המייל');
+        : authStatusHTML('ok', 'לינק כניסה נשלח, בדקו את המייל');
     });
   }
 
@@ -128,16 +144,16 @@
       const email = form.querySelector('.newsletter-email').value.trim();
       if (!email) return;
       status.innerHTML = authStatusHTML('sending', 'נרשמים...');
-      const { error } = await client.functions.invoke('lalum-newsletter-subscribe', {
+      const { error } = await safely(client.functions.invoke('lalum-newsletter-subscribe', {
         body: {
           email,
           source: 'lalumap',
           consent_text_version: NEWSLETTER_CONSENT_VERSION,
           consent_text: NEWSLETTER_CONSENT_TEXT,
         },
-      });
+      }));
       status.innerHTML = error
-        ? authStatusHTML('error', 'שגיאה בהרשמה — נסו שוב')
+        ? authStatusHTML('error', 'שגיאה בהרשמה, נסו שוב')
         : authStatusHTML('ok', 'נרשמתם! העדכון הבא יגיע במייל');
       if (!error) form.reset();
     });
@@ -182,7 +198,7 @@
       submitBtn.disabled = true;
       newClientStatus.innerHTML = authStatusHTML('sending', 'שומר...');
 
-      const { error } = await client.from('lalum_contacts').insert({ full_name, phone, is_lead });
+      const { error } = await safely(client.from('lalum_contacts').insert({ full_name, phone, is_lead }));
 
       submitBtn.disabled = false;
       if (error) {
@@ -213,11 +229,11 @@
     }
     clientsGate.innerHTML = '';
     clientsList.innerHTML = '<div class="card-meta">טוען...</div>';
-    const { data, error } = await client
+    const { data, error } = await safely(client
       .from('lalum_contacts')
       .select('full_name, phone, is_lead, created_at')
       .order('created_at', { ascending: false })
-      .limit(20);
+      .limit(20));
 
     if (error) {
       clientsList.innerHTML = `<div class="card"><div class="card-meta">אין הרשאת מנהל/ת לצפייה ברשימת הלקוחות (${escapeHTML(error.message)})</div></div>`;
@@ -264,7 +280,7 @@
         </span>
         <span class="pill pill-${d.tone}">${d.label}</span>
       </div>`).join('');
-    return rows + '<span class="card-meta" style="font-size:11px; font-style:italic;">תצוגה לדוגמה — טרם מחובר למסמכים אמיתיים</span>';
+    return rows + '<span class="card-meta" style="font-size:11px; font-style:italic;">תצוגה לדוגמה, טרם מחובר למסמכים אמיתיים</span>';
   }
 
   clientsList.addEventListener('click', (e) => {
@@ -288,18 +304,18 @@
     communityGate.innerHTML = '';
     communityComposer.style.display = 'flex';
     communityList.innerHTML = '<div class="card-meta">טוען...</div>';
-    const { data, error } = await client
+    const { data, error } = await safely(client
       .from('lalum_group_chat_messages')
       .select('author_name, body, created_at')
       .order('created_at', { ascending: false })
-      .limit(50);
+      .limit(50));
 
     if (error) {
       communityList.innerHTML = `<div class="card"><div class="card-meta">שגיאה בטעינת הקהילה (${escapeHTML(error.message)})</div></div>`;
       return;
     }
     if (!data || data.length === 0) {
-      communityList.innerHTML = '<div class="card"><div class="card-meta">עדיין אין הודעות — היו הראשונים לכתוב.</div></div>';
+      communityList.innerHTML = '<div class="card"><div class="card-meta">עדיין אין הודעות, היו הראשונים לכתוב.</div></div>';
       return;
     }
     communityList.innerHTML = data.map((m) => `
@@ -315,21 +331,35 @@
     if (!session) return;
     const body = communityInput.value.trim();
     if (!body) return;
-    const { error } = await client.from('lalum_group_chat_messages').insert({
+    const { error } = await safely(client.from('lalum_group_chat_messages').insert({
       user_id: session.user.id,
       author_name: session.user.email || 'חבר/ת קהילה',
       body,
-    });
+    }));
     if (!error) {
       communityInput.value = '';
       loadCommunity(session);
     }
   });
 
+  // Header avatar doubles as the sign-out control (see cookies.html, "איך
+  // מוחקים אותו"): hidden while signed out, shown as a real button once a
+  // session exists. The icon is set once here rather than in markup, same
+  // inline-SVG pattern as every other icon in this file.
+  if (headerAvatar) {
+    headerAvatar.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>';
+    headerAvatar.addEventListener('click', () => { client.auth.signOut(); });
+  }
+
+  function updateHeaderAvatar(session) {
+    if (headerAvatar) headerAvatar.hidden = !session;
+  }
+
   let currentSession = null;
 
   client.auth.onAuthStateChange((_event, session) => {
     currentSession = session;
+    updateHeaderAvatar(session);
     loadClients(session);
     loadCommunity(session);
   });
@@ -341,6 +371,7 @@
 
   client.auth.getSession().then(({ data: { session } }) => {
     currentSession = session;
+    updateHeaderAvatar(session);
     loadClients(session);
     loadCommunity(session);
   });
