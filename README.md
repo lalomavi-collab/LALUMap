@@ -30,6 +30,8 @@ The Supabase project behind this app (`lalum-app`) is the firm's live backend �
 
 Because RLS enforces this at the database, the anon/publishable key in `config.js` is safe to ship in public code (including this public repo) — it identifies the project, it does not grant access. **The one thing that must never happen is adding a table or policy that lets the `anon` role read either table directly** — always go through an authenticated session.
 
+Signing out: the header's avatar circle (`#header-avatar`) is hidden while signed out and becomes a real sign-out button once a session exists (`data.js`'s `updateHeaderAvatar`, called from both `onAuthStateChange` and the initial `getSession` check), calling `client.auth.signOut()`. `cookies.html` describes this as the way to clear the stored session token.
+
 ## Newsletter — daily short update, opt-in, human-approved before every send
 
 The "עדכון יומי" card on מרכז ידע lets anyone subscribe with just an email (no auth) via the public `lalum-newsletter-subscribe` edge function, which upserts into `public.lalum_newsletter_subscribers` (mirrors `lalum_leads`'s consent pattern: `consent_at` + the exact consent wording shown at signup, for Privacy Law Amendment 13). Every sent email carries a one-click unsubscribe link (`lalum-newsletter-unsubscribe`, token-based, no login needed).
@@ -44,6 +46,6 @@ This sandbox's outbound network policy blocks `cdn.jsdelivr.net` and `*.supabase
 
 ## Next steps
 
-- Wire ביקורת AI and מרכז ידע to real tables when there's a schema for them; they're still static/sample.
-- Extend `service-worker.js`'s cache list as routes/assets grow.
-- Consider enabling Supabase Auth's leaked-password protection and reviewing the `pg_net`-in-`public`-schema advisory noted by `get_advisors` — both pre-date this change but are worth a look.
+- Wire ביקורת AI and מרכז ידע to real tables when there's a schema for them; they're still static/sample. Deliberately not attempted without a live decision from the operator: both would need new tables/RLS policies on `lalum-app`'s shared production database (the same project handling billing, calls, and an unrelated email-routing system), which isn't a change to make unattended.
+- Extend `service-worker.js`'s cache list as routes/assets grow (currently `v3`).
+- Consider enabling Supabase Auth's leaked-password protection (Authentication → Attack Protection in the dashboard; no API/MCP tool exposes this) and reviewing the `pg_net`-in-`public`-schema advisory noted by `get_advisors` — both pre-date this change but are worth a look. `get_advisors` also flags `lalum_is_admin()` as a `SECURITY DEFINER` function callable directly by any authenticated user via `/rest/v1/rpc/lalum_is_admin`; it only ever returns the caller's own admin status (never another user's data), and revoking that without testing risks breaking the RLS policies that call it internally, so left as-is pending a deliberate look rather than an unattended change.
