@@ -8,6 +8,7 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Manrope:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="/styles.css">
+  <script src="/a11y.js"></script>
   <style>
     body { min-height: auto; }
     .legal-wrap { max-width: 720px; margin: 0 auto; padding: 32px 22px 80px; }
@@ -47,6 +48,36 @@
     <p>
       אם בעתיד תתווסף אנליטיקס לאפליקציה, עמוד זה יעודכן, ותוצג בקשת הסכמה מפורשת ונפרדת לפני הפעלתה, בהתאם למפורט
       ב<a href="/privacy.html">מדיניות הפרטיות</a>.
+    </p>
+  </div>
+
+  <button id="a11y-fab" type="button" class="a11y-fab" aria-haspopup="dialog" aria-expanded="false" aria-controls="a11y-panel" aria-label="אפשרויות נגישות">
+    <svg viewBox="0 0 24 24" fill="#fff" aria-hidden="true" focusable="false">
+      <circle cx="12" cy="4" r="2"/>
+      <path d="M4 8.5c-.5-.2-.6-.9-.2-1.3s1-.4 1.4-.1C7.4 8.3 9.6 9 12 9s4.6-.7 6.8-1.9c.4-.3 1-.2 1.4.1s.3 1.1-.2 1.3c-1.9 1-4 1.6-6 1.8V13l2.7 6.6c.2.5-.1 1.1-.6 1.3s-1.1-.1-1.3-.6L12 15l-2.8 5.3c-.2.5-.8.8-1.3.6s-.8-.8-.6-1.3L10 13v-3.7c-2-.2-4.1-.8-6-1.8Z"/>
+    </svg>
+  </button>
+  <div id="a11y-panel" class="a11y-panel" role="dialog" aria-label="אפשרויות נגישות" hidden>
+    <h2 class="display">אפשרויות נגישות</h2>
+    <div class="a11y-row">
+      <span>גודל טקסט</span>
+      <div class="a11y-textbtns">
+        <button type="button" id="a11y-decrease" aria-label="הקטנת טקסט" style="font-size:12px;">א</button>
+        <button type="button" id="a11y-increase" aria-label="הגדלת טקסט" style="font-size:20px;">א</button>
+      </div>
+    </div>
+    <label class="a11y-row">
+      <span>ניגודיות גבוהה</span>
+      <input type="checkbox" id="a11y-contrast-toggle">
+    </label>
+    <label class="a11y-row">
+      <span>קו תחתון לקישורים</span>
+      <input type="checkbox" id="a11y-underline-toggle">
+    </label>
+    <button type="button" id="a11y-reset" class="a11y-reset">איפוס לברירת מחדל</button>
+    <p class="a11y-statement">
+      האפליקציה שואפת לעמוד בתקן WCAG 2.0 ברמה AA. נתקלתם בבעיית נגישות?
+      <a href="/accessibility.html">ספרו לנו כאן</a>.
     </p>
   </div>
 </body>

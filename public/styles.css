@@ -249,6 +249,63 @@ button { font-family: inherit; cursor: pointer; }
   color: var(--text); border-end-start-radius: 4px;
 }
 .lex-status { align-self: flex-start; font-size: 12.5px; color: var(--text-tertiary); padding: 0 4px; }
+
+/* Accessibility widget (a11y.js). Fixed by default so it stays pinned while
+   reading a long standalone page (privacy.html etc.); on index.html the
+   app-shell override below binds it to the visual app column instead,
+   same reasoning as .lex-fab above and positioned as its mirror image on
+   the opposite side (inset-inline-start here vs. -end on .lex-fab), so the
+   two sit together the way lalumapp.com's own chat + accessibility icons
+   do, without sharing any code with that site. */
+.a11y-fab {
+  position: fixed; bottom: 16px; inset-inline-start: 16px;
+  width: 52px; height: 52px; border-radius: 50%; background: #2F6FED;
+  border: none; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 14px rgba(26, 24, 21, 0.22); z-index: 55;
+}
+.app-shell .a11y-fab { position: absolute; bottom: calc(var(--nav-h) + 16px); }
+.a11y-fab svg { width: 24px; height: 24px; }
+.a11y-fab:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+
+.a11y-panel {
+  position: fixed; bottom: 76px; inset-inline-start: 16px; z-index: 55;
+  width: 280px; max-width: calc(100vw - 32px); background: var(--surface);
+  border: 1px solid var(--border); border-radius: 16px; padding: 18px;
+  box-shadow: 0 8px 28px rgba(26, 24, 21, 0.18);
+}
+.app-shell .a11y-panel { position: absolute; bottom: calc(var(--nav-h) + 76px); }
+.a11y-panel[hidden] { display: none; }
+.a11y-panel h2 { font-size: 15px; margin: 0 0 12px; }
+.a11y-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.a11y-row span { font-size: 13.5px; }
+.a11y-textbtns { display: flex; gap: 8px; }
+.a11y-textbtns button {
+  flex: 1; height: 36px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--surface-raised); font-weight: 700; font-size: 14px; color: var(--text);
+}
+.a11y-textbtns button:disabled { opacity: .4; }
+.a11y-reset {
+  width: 100%; height: 36px; border-radius: 8px; border: 1px solid var(--border);
+  background: none; color: var(--text-secondary); font-size: 13px; margin-top: 4px;
+}
+.a11y-panel .a11y-statement {
+  font-size: 11.5px; color: var(--text-tertiary); line-height: 1.5; margin-top: 10px;
+  padding-top: 10px; border-top: 1px solid var(--border);
+}
+
+/* Real, working adjustments, applied via attributes on <html> (set before
+   first paint by a11y.js's own lazy read of localStorage) — same technique
+   as .reveal above's no-JS/reduced-motion fail-open, but for a visitor's
+   explicit choice instead of a system preference. */
+html[data-a11y-fontscale="1.15"] { font-size: 115%; }
+html[data-a11y-fontscale="1.3"] { font-size: 130%; }
+html[data-a11y-fontscale="1.45"] { font-size: 145%; }
+html[data-a11y-contrast] {
+  --bg: #ffffff; --surface: #ffffff; --surface-raised: #ffffff;
+  --border: #000000; --border-strong: #000000; --text: #000000;
+  --text-secondary: #000000; --text-tertiary: #1a1a1a;
+}
+html[data-a11y-underline] a:not(.no-force-underline) { text-decoration: underline; text-underline-offset: 3px; }
 .lex-form {
   flex-shrink: 0; display: flex; gap: 8px; align-items: center; padding: 12px 18px;
   padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
