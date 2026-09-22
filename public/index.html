@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>LALUM</title>
-  <meta name="description" content="LALUM Legal Engine — ניהול משרד, ביקורת סיכון AI ומרכז ידע נדל&quot;ן">
+  <meta name="description" content="LALUM Legal Engine: ניהול משרד, ביקורת סיכון AI ומרכז ידע נדל&quot;ן">
 
   <!-- PWA -->
   <link rel="manifest" href="/manifest.json">
@@ -18,53 +18,118 @@
 
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="/styles.css">
+  <!-- Applies a returning visitor's saved accessibility settings (text
+       size, contrast, underlined links) before first paint, so there's no
+       flash of the default look being overridden a moment later. -->
+  <script src="/a11y.js"></script>
 </head>
 <body>
+  <a href="#main-content" class="sr-only skip-link">דלג לתוכן הראשי</a>
   <div class="app-shell">
     <header class="app-header">
       <h1 class="display" id="screen-title">לקוחות</h1>
-      <div class="avatar" aria-hidden="true"></div>
+      <div style="display:flex; align-items:center; gap:12px;">
+        <nav class="legal-links" aria-label="קישורים משפטיים">
+          <a href="/privacy.html">פרטיות</a>
+          <a href="/terms.html">תנאים</a>
+          <a href="/security.html">אבטחה</a>
+          <a href="/accessibility.html">נגישות</a>
+          <a href="/cookies.html">עוגיות</a>
+        </nav>
+        <button type="button" id="header-avatar" class="avatar" hidden aria-label="התנתקות"></button>
+      </div>
     </header>
 
-    <!-- ניהול משרד — מחובר ל-lalum_contacts האמיתית, קריאה מוגבלת ל-admin ע"י RLS -->
+    <div id="main-content" tabindex="-1">
+    <!-- ניהול משרד — מחובר ל-lalum_contacts האמיתית, קריאה מוגבלת ל-admin ע"י RLS.
+         "לקוח חדש" מבצע INSERT אמיתי, מוגן במדיניות admin_insert_contacts
+         (זהה בעקרונה למדיניות הקריאה: lalum_is_admin() בלבד). -->
     <main class="screen active" id="screen-practice" aria-labelledby="screen-title">
-      <button class="btn-primary" type="button" disabled title="יצירת לקוח עדיין לא מחוברת">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      <button class="btn-primary" type="button" id="new-client-toggle" aria-expanded="false" aria-controls="new-client-form-card">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14"/></svg>
         לקוח חדש
       </button>
 
+      <div class="card" id="new-client-form-card" hidden style="gap:14px;">
+        <form id="new-client-form" style="display:flex; flex-direction:column; gap:10px;">
+          <div>
+            <label for="new-client-name" class="sr-only">שם מלא</label>
+            <input id="new-client-name" type="text" required placeholder="שם מלא" autocomplete="name"
+              style="width:100%; background:var(--surface); border:1px solid var(--border-strong); border-radius:9999px; padding:0 18px; height:44px; color:var(--text); font-family:inherit; font-size:14px;">
+          </div>
+          <div>
+            <label for="new-client-phone" class="sr-only">טלפון</label>
+            <input id="new-client-phone" type="tel" required placeholder="טלפון" autocomplete="tel" dir="ltr"
+              style="width:100%; background:var(--surface); border:1px solid var(--border-strong); border-radius:9999px; padding:0 18px; height:44px; color:var(--text); font-family:inherit; font-size:14px; text-align:right;">
+          </div>
+          <fieldset style="border:none; padding:0; margin:0; display:flex; gap:16px;">
+            <legend class="sr-only">סוג</legend>
+            <label style="display:flex; align-items:center; gap:6px; font-size:13.5px;">
+              <input type="radio" name="new-client-kind" value="lead" checked> ליד
+            </label>
+            <label style="display:flex; align-items:center; gap:6px; font-size:13.5px;">
+              <input type="radio" name="new-client-kind" value="client"> לקוח
+            </label>
+          </fieldset>
+          <div style="display:flex; gap:10px;">
+            <button type="submit" class="btn-primary" style="height:44px;">שמירה</button>
+            <button type="button" id="new-client-cancel" style="height:44px; background:none; border:1px solid var(--border-strong); border-radius:9999px; padding:0 18px; color:var(--text-secondary); font-family:inherit; font-size:14px;">ביטול</button>
+          </div>
+        </form>
+        <div id="new-client-status" aria-live="polite"></div>
+      </div>
+
       <div class="section-label">לקוחות (נתונים אמיתיים)</div>
-      <div id="clients-auth-gate"></div>
-      <div id="clients-list"></div>
+      <div id="clients-auth-gate" aria-live="polite"></div>
+      <div id="clients-list" aria-live="polite"></div>
     </main>
 
     <!-- ביקורת AI -->
-    <main class="screen" id="screen-risk" aria-labelledby="screen-title">
+    <main class="screen" id="screen-risk" aria-labelledby="screen-title" hidden>
       <!-- Mode switcher: the four practice pillars share this one audit view
            instead of each getting its own screen. Still sample/static data
            (see README — this screen has no schema behind it yet); the
            switcher itself and the tone system (ok/warn/high, matching the
-           risk-badge language already live on lalumapp.com) are real. -->
+           risk-badge language already live on lalumapp.com) are real. The
+           notice below is not decorative: every score and finding on this
+           screen is invented placeholder data, and it needs to say so on
+           the screen itself, not only in the README, so nobody mistakes a
+           sample risk score for a real one. -->
+      <div class="card" style="flex-direction: row; align-items: center; gap: 10px; background: var(--amber-bg); border-color: transparent;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--amber-text)" stroke-width="2" aria-hidden="true" focusable="false" style="flex-shrink:0;"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+        <span style="font-size: 12.5px; font-weight: 600; color: var(--amber-text);">תצוגת לדוגמה: הציונים והממצאים כאן אינם מבוססים על בדיקה אמיתית.</span>
+      </div>
       <div class="tabs" id="risk-tabs" role="tablist" aria-label="תחום ביקורת"></div>
       <div id="risk-content"></div>
     </main>
 
     <!-- מרכז ידע -->
-    <main class="screen" id="screen-knowledge" aria-labelledby="screen-title">
+    <main class="screen" id="screen-knowledge" aria-labelledby="screen-title" hidden>
       <div class="search-bar">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
         <span>חיפוש נושא, סעיף, פסק דין</span>
       </div>
 
-      <div class="tabs">
-        <button class="tab" type="button">קורסים</button>
-        <button class="tab" type="button">מדריכים</button>
-        <button class="tab active" type="button">פסיקה</button>
+      <!-- Static for now (see README: only the domain filter below is wired
+           up); roles reflect the real current state (פסיקה selected)
+           rather than implying קורסים/מדריכים already switch content. -->
+      <div class="tabs" role="tablist" aria-label="סוג תוכן">
+        <button class="tab" type="button" role="tab" aria-selected="false">קורסים</button>
+        <button class="tab" type="button" role="tab" aria-selected="false">מדריכים</button>
+        <button class="tab active" type="button" role="tab" aria-selected="true">פסיקה</button>
       </div>
 
       <!-- Domain filter: same four practice pillars as ביקורת AI, so the
            same mental model ("pick your area") carries across screens.
-           Still sample cards (2 per domain) — only the filter is real. -->
+           Still sample cards (2 per domain) — only the filter is real. The
+           rulings shown are invented placeholders (see README), so, same
+           reasoning as the ביקורת AI notice: it says so on the screen
+           itself, not just in the README, since these are styled exactly
+           like a real citation would be. -->
+      <div class="card" style="flex-direction: row; align-items: center; gap: 10px; background: var(--amber-bg); border-color: transparent;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--amber-text)" stroke-width="2" aria-hidden="true" focusable="false" style="flex-shrink:0;"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+        <span style="font-size: 12.5px; font-weight: 600; color: var(--amber-text);">תצוגת לדוגמה: פרטי הפסיקה כאן אינם מקורות אמיתיים.</span>
+      </div>
       <div class="tabs" id="knowledge-domains" role="tablist" aria-label="תחום"></div>
       <div id="knowledge-cards"></div>
 
@@ -74,40 +139,112 @@
     </main>
 
     <!-- קהילה — מחובר ל-lalum_group_chat_messages, קריאה/כתיבה לכל משתמש מחובר -->
-    <main class="screen" id="screen-community" aria-labelledby="screen-title">
-      <div id="community-auth-gate"></div>
+    <main class="screen" id="screen-community" aria-labelledby="screen-title" hidden>
+      <div id="community-auth-gate" aria-live="polite"></div>
       <form id="community-composer" class="card" style="flex-direction:row; gap:8px; align-items:center; display:none;">
+        <label for="community-input" class="sr-only">הודעה לקהילה</label>
         <input type="text" id="community-input" placeholder="שתפו את הקהילה..." autocomplete="off"
           style="flex:1; background:none; border:none; color:var(--text); font-family:inherit; font-size:14px; outline:none;">
         <button type="submit" class="btn-primary" style="width:auto; height:40px; padding:0 18px;">שליחה</button>
       </form>
-      <div id="community-list"></div>
+      <div id="community-list" aria-live="polite"></div>
     </main>
+    </div>
 
     <nav class="bottom-nav" aria-label="ניווט ראשי">
-      <button class="nav-item active" type="button" data-screen="practice" data-title="לקוחות">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.4"/><path d="M2.5 20c1-4 3.4-6 6.5-6s5.5 2 6.5 6"/><circle cx="17.5" cy="9" r="2.6"/><path d="M15.5 13.2c2.4.3 4 2 4.8 4.8"/></svg>
+      <button class="nav-item active" type="button" data-screen="practice" data-title="לקוחות" aria-current="page">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" focusable="false"><circle cx="9" cy="8" r="3.4"/><path d="M2.5 20c1-4 3.4-6 6.5-6s5.5 2 6.5 6"/><circle cx="17.5" cy="9" r="2.6"/><path d="M15.5 13.2c2.4.3 4 2 4.8 4.8"/></svg>
         <span>לקוחות</span>
       </button>
       <button class="nav-item" type="button" data-screen="risk" data-title="ביקורת AI">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 3v18M4 8h5M4 16h5"/><circle cx="16.5" cy="12" r="5.2"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" focusable="false"><path d="M9 3v18M4 8h5M4 16h5"/><circle cx="16.5" cy="12" r="5.2"/></svg>
         <span>ביקורת AI</span>
       </button>
       <button class="nav-item" type="button" data-screen="knowledge" data-title="מרכז ידע">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5c3-1.5 6-1.5 8 0v14c-2-1.5-5-1.5-8 0V5zM20 5c-3-1.5-6-1.5-8 0v14c2-1.5 5-1.5 8 0V5z"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" focusable="false"><path d="M4 5c3-1.5 6-1.5 8 0v14c-2-1.5-5-1.5-8 0V5zM20 5c-3-1.5-6-1.5-8 0v14c2-1.5 5-1.5 8 0V5z"/></svg>
         <span>מרכז ידע</span>
       </button>
       <button class="nav-item" type="button" data-screen="community" data-title="קהילה">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="9" r="3"/><circle cx="16" cy="9" r="3"/><path d="M2.5 20c.8-3.6 3-5.5 5.5-5.5s4.7 1.9 5.5 5.5M10.5 14.7c.8-2.6 2.8-4 5.5-4s4.9 1.6 5.5 4.3"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" focusable="false"><circle cx="8" cy="9" r="3"/><circle cx="16" cy="9" r="3"/><path d="M2.5 20c.8-3.6 3-5.5 5.5-5.5s4.7 1.9 5.5 5.5M10.5 14.7c.8-2.6 2.8-4 5.5-4s4.9 1.6 5.5 4.3"/></svg>
         <span>קהילה</span>
       </button>
     </nav>
+
+    <!-- LALUM LEX — reuses the existing lalum-assistant Edge Function (see
+         lex.js): same verified case-law database and grounding rules as the
+         lalumapp.com site's own chat widget, not a second assistant. -->
+    <button id="lex-fab" type="button" class="lex-fab" aria-haspopup="dialog" aria-expanded="false" aria-controls="lex-dialog">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" aria-hidden="true" focusable="false"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+      <span class="sr-only">שאלו את LALUM LEX</span>
+    </button>
+
+    <div id="lex-dialog" class="lex-dialog" role="dialog" aria-modal="true" aria-labelledby="lex-title" hidden>
+      <div class="lex-header">
+        <div>
+          <h2 id="lex-title" class="display" style="font-size:18px;">LALUM LEX</h2>
+          <!-- Names, on screen, the discipline the system prompt already
+               enforces (strict grounding, verified sources only, never a
+               fabricated citation): a trust claim only means something when
+               it's stated where the visitor actually is, not just in a
+               README or a prompt nobody reads. See Thomson Reuters'
+               public "Fiduciary-Grade AI" standard for the same idea done
+               at a much bigger scale: naming and standing behind the
+               grounding discipline as a stated product commitment,
+               not just an internal implementation detail. -->
+          <p style="margin:2px 0 0; font-size:11px; color:var(--text-secondary);">עקרון ההצמדה של LALUM: מבוסס רק על מקורות מאומתים</p>
+        </div>
+        <button id="lex-close" type="button" aria-label="סגירת הצ׳אט" style="background:none; border:none; color:var(--text-secondary); width:32px; height:32px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="lex-disclaimer">מידע כללי בלבד, אינו מהווה ייעוץ משפטי ואינו יוצר יחסי עורך דין-לקוח.</div>
+      <div id="lex-messages" class="lex-messages" role="log" aria-live="polite" aria-label="שיחה עם LALUM LEX"></div>
+      <form id="lex-form" class="lex-form">
+        <label for="lex-input" class="sr-only">הקלידו שאלה</label>
+        <input id="lex-input" type="text" placeholder="שאלה, או פקודה כמו ‎/recir" autocomplete="off">
+        <button type="submit" class="btn-primary" style="width:auto; height:40px; padding:0 18px;">שליחה</button>
+      </form>
+    </div>
+
+    <!-- Accessibility widget (a11y.js): text size, high contrast, underline
+         links — each one genuinely functional via styles.css's
+         [data-a11y-*] rules, not a decorative icon. -->
+    <button id="a11y-fab" type="button" class="a11y-fab" aria-haspopup="dialog" aria-expanded="false" aria-controls="a11y-panel" aria-label="אפשרויות נגישות">
+      <svg viewBox="0 0 24 24" fill="#fff" aria-hidden="true" focusable="false">
+        <circle cx="12" cy="4" r="2"/>
+        <path d="M4 8.5c-.5-.2-.6-.9-.2-1.3s1-.4 1.4-.1C7.4 8.3 9.6 9 12 9s4.6-.7 6.8-1.9c.4-.3 1-.2 1.4.1s.3 1.1-.2 1.3c-1.9 1-4 1.6-6 1.8V13l2.7 6.6c.2.5-.1 1.1-.6 1.3s-1.1-.1-1.3-.6L12 15l-2.8 5.3c-.2.5-.8.8-1.3.6s-.8-.8-.6-1.3L10 13v-3.7c-2-.2-4.1-.8-6-1.8Z"/>
+      </svg>
+    </button>
+    <div id="a11y-panel" class="a11y-panel" role="dialog" aria-label="אפשרויות נגישות" hidden>
+      <h2 class="display">אפשרויות נגישות</h2>
+      <div class="a11y-row">
+        <span>גודל טקסט</span>
+        <div class="a11y-textbtns">
+          <button type="button" id="a11y-decrease" aria-label="הקטנת טקסט" style="font-size:12px;">א</button>
+          <button type="button" id="a11y-increase" aria-label="הגדלת טקסט" style="font-size:20px;">א</button>
+        </div>
+      </div>
+      <label class="a11y-row">
+        <span>ניגודיות גבוהה</span>
+        <input type="checkbox" id="a11y-contrast-toggle">
+      </label>
+      <label class="a11y-row">
+        <span>קו תחתון לקישורים</span>
+        <input type="checkbox" id="a11y-underline-toggle">
+      </label>
+      <button type="button" id="a11y-reset" class="a11y-reset">איפוס לברירת מחדל</button>
+      <p class="a11y-statement">
+        האפליקציה שואפת לעמוד בתקן WCAG 2.0 ברמה AA. נתקלתם בבעיית נגישות?
+        <a href="/accessibility.html">ספרו לנו כאן</a>.
+      </p>
+    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="/config.js"></script>
   <script src="/app.js"></script>
   <script src="/data.js"></script>
+  <script src="/lex.js"></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {

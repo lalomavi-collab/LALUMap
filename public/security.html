@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>אבטחת מידע | LALUM</title>
+  <meta name="description" content="כיצד אפליקציית LALUM מגנה על מידע לקוחות: הצפנה, בקרת הרשאות (RLS) ומדיניות גישה.">
+  <meta name="robots" content="noindex, follow">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Manrope:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/a11y.js"></script>
+  <style>
+    body { min-height: auto; }
+    .legal-wrap { max-width: 720px; margin: 0 auto; padding: 32px 22px 80px; }
+    .legal-wrap h1 { font-size: 26px; margin-bottom: 6px; }
+    .legal-wrap h2 { font-size: 17px; margin: 32px 0 10px; }
+    .legal-wrap p, .legal-wrap li { font-size: 14.5px; line-height: 1.7; color: var(--text-secondary); }
+    .legal-wrap ul { margin: 0; padding-inline-start: 20px; display: flex; flex-direction: column; gap: 6px; }
+    .legal-wrap a { color: var(--brand); text-decoration: underline; }
+    .back-link { display: inline-block; margin-bottom: 24px; font-size: 13px; color: var(--text-secondary); }
+  </style>
+</head>
+<body>
+  <div class="legal-wrap">
+    <a href="/" class="back-link">&#8592; חזרה לאפליקציה</a>
+    <h1 class="display">אבטחת מידע</h1>
+    <p>עודכן לאחרונה: 20.9.2026</p>
+
+    <div class="card" style="background: var(--amber-bg); border-color: transparent; margin-top: 18px;">
+      <p style="color: var(--amber-text); font-weight: 600; margin: 0;">
+        עמוד זה מתאר באופן מדויק את אמצעי האבטחה הקיימים בפועל באפליקציה נכון להיום. הוא אינו תחליף למדיניות אבטחת
+        מידע פנימית מלאה, וטרם עבר ביקורת משפטית פורמלית.
+      </p>
+    </div>
+
+    <h2>הצפנה בהעברה</h2>
+    <p>
+      כל תקשורת בין הדפדפן לשרתי האפליקציה ולמסד הנתונים מתבצעת בהצפנת HTTPS/TLS בלבד. האפליקציה אינה תומכת בגישה
+      לא מוצפנת.
+    </p>
+
+    <h2>הרשאות ברמת השורה (Row Level Security)</h2>
+    <p>
+      נתוני הלקוחות האמיתיים ("לקוחות") ומסך הקהילה מוגנים באמצעות מדיניות הרשאה ברמת מסד הנתונים (Row Level
+      Security ב-PostgreSQL), לא רק באמצעות הסתרה בממשק. משמעות הדבר: גם אם מישהו יעקוף את ממשק המשתמש, מסד הנתונים
+      עצמו לא יחזיר נתוני לקוחות למי שאינו מחובר כמנהל מאומת, וכל בקשה לכתיבה או קריאה במסך הקהילה דורשת חיבור פעיל.
+    </p>
+
+    <h2>אימות ללא סיסמה</h2>
+    <p>
+      ההתחברות מתבצעת באמצעות קישור כניסה חד־פעמי (magic link) שנשלח לכתובת המייל, לא באמצעות סיסמה. האפליקציה אינה
+      שומרת, מציגה או מעבדת סיסמאות כלל.
+    </p>
+
+    <h2>מפתח ציבורי, לא סוד</h2>
+    <p>
+      קוד האפליקציה גלוי (open) וכולל מפתח ציבורי (anon key) של פרויקט מסד הנתונים. מפתח זה מזהה את הפרויקט בלבד ואינו
+      מעניק גישה לנתונים; ההגנה בפועל היא ה-Row Level Security המתואר לעיל, לא סודיות המפתח.
+    </p>
+
+    <h2>תוכן דוגמה מסומן ככזה</h2>
+    <p>
+      מסכי "ביקורת AI" ו"מרכז ידע" מציגים כרגע נתוני דוגמה בלבד, המסומנים במפורש על גבי המסך עצמו, כדי שאיש לא יטעה
+      ביניהם לבין ניתוח אמיתי או מקור משפטי אמיתי.
+    </p>
+
+    <h2>דיווח על בעיית אבטחה</h2>
+    <p>
+      אם מצאתם פרצת אבטחה או חשד לכזו, נבקש לדווח ישירות ובאחריות (responsible disclosure) לכתובת
+      <a href="mailto:avraham@lalum.co">avraham@lalum.co</a>, ולא לפרסם את הממצא באופן פומבי לפני תיקונו.
+    </p>
+  </div>
+
+  <button id="a11y-fab" type="button" class="a11y-fab" aria-haspopup="dialog" aria-expanded="false" aria-controls="a11y-panel" aria-label="אפשרויות נגישות">
+    <svg viewBox="0 0 24 24" fill="#fff" aria-hidden="true" focusable="false">
+      <circle cx="12" cy="4" r="2"/>
+      <path d="M4 8.5c-.5-.2-.6-.9-.2-1.3s1-.4 1.4-.1C7.4 8.3 9.6 9 12 9s4.6-.7 6.8-1.9c.4-.3 1-.2 1.4.1s.3 1.1-.2 1.3c-1.9 1-4 1.6-6 1.8V13l2.7 6.6c.2.5-.1 1.1-.6 1.3s-1.1-.1-1.3-.6L12 15l-2.8 5.3c-.2.5-.8.8-1.3.6s-.8-.8-.6-1.3L10 13v-3.7c-2-.2-4.1-.8-6-1.8Z"/>
+    </svg>
+  </button>
+  <div id="a11y-panel" class="a11y-panel" role="dialog" aria-label="אפשרויות נגישות" hidden>
+    <h2 class="display">אפשרויות נגישות</h2>
+    <div class="a11y-row">
+      <span>גודל טקסט</span>
+      <div class="a11y-textbtns">
+        <button type="button" id="a11y-decrease" aria-label="הקטנת טקסט" style="font-size:12px;">א</button>
+        <button type="button" id="a11y-increase" aria-label="הגדלת טקסט" style="font-size:20px;">א</button>
+      </div>
+    </div>
+    <label class="a11y-row">
+      <span>ניגודיות גבוהה</span>
+      <input type="checkbox" id="a11y-contrast-toggle">
+    </label>
+    <label class="a11y-row">
+      <span>קו תחתון לקישורים</span>
+      <input type="checkbox" id="a11y-underline-toggle">
+    </label>
+    <button type="button" id="a11y-reset" class="a11y-reset">איפוס לברירת מחדל</button>
+    <p class="a11y-statement">
+      האפליקציה שואפת לעמוד בתקן WCAG 2.0 ברמה AA. נתקלתם בבעיית נגישות?
+      <a href="/accessibility.html">ספרו לנו כאן</a>.
+    </p>
+  </div>
+</body>
+</html>

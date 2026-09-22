@@ -12,17 +12,42 @@
   --border: rgba(26, 24, 21, 0.10);
   --border-strong: rgba(26, 24, 21, 0.18);
   --text: #1A1815;
-  --text-secondary: rgba(26, 24, 21, 0.62);
-  --text-tertiary: rgba(26, 24, 21, 0.42);
+  /* 0.62/0.66 (not the original 0.62/0.42): measured contrast against both
+     --surface (white) and --bg, text-tertiary's original 0.42 alpha only
+     hit ~2.6:1, which is what the bottom nav's inactive labels and every
+     .section-label were rendered at, well under the 4.5:1 WCAG AA floor
+     for normal-size text. Bumped both until each cleared 4.5:1 with a
+     margin on the darker of the two backgrounds. */
+  --text-secondary: rgba(26, 24, 21, 0.66);
+  --text-tertiary: rgba(26, 24, 21, 0.62);
   --brand: #6B8F6E;
+  /* Originally a hover-darken shade only. Also doubles as: (a) the text
+     colour for --brand used as text on a light background (nav-item.active,
+     .tag) — --brand itself measured fine there, this isn't the fix target;
+     and (b) the resting (not just hover) background for white text
+     (.btn-primary, .tab.active, .skip-link:focus, .lex-bubble-user) — those
+     measured ~3.6:1 with white text against plain --brand, under the 4.5:1
+     floor, while --brand-hover clears ~4.8:1. Same reasoning as
+     --amber-text/--green-text/--red-text below: a darker variant for text
+     use, without touching --brand's own value everywhere else it already
+     works (icons, the focus outline, .bar-fill, .lex-fab). */
   --brand-hover: #5A7A5D;
   --brand-tint: #E7EDE4;
   --amber: #B5811A;
   --amber-bg: rgba(181, 129, 26, 0.14);
+  /* Darker than --amber/--green/--red specifically for text rendered on
+     top of the matching -bg tint (the risk-level pills): the base tone
+     colors measured ~2.9-4:1 there, under the 4.5:1 text floor, even
+     though they're fine as icon/ring strokes elsewhere (a 3:1 non-text
+     graphic threshold). Keeping these separate rather than darkening the
+     base tokens avoids touching those other, already-passing uses. */
+  --amber-text: #7A5610;
   --green: #3F9D5A;
   --green-bg: rgba(63, 157, 90, 0.14);
+  --green-text: #2B6F3F;
   --red: #C24A3E;
   --red-bg: rgba(194, 74, 62, 0.14);
+  --red-text: #8F332A;
   --nav-h: 76px;
   --header-h: 64px;
 }
@@ -70,9 +95,35 @@ button { font-family: inherit; cursor: pointer; }
 
 .app-header .display { font-size: 26px; }
 
+/* Wraps to a second line on narrow phones instead of overflowing or
+   shrinking the title (verified at 320px/375px); each link keeps a real
+   min-height tap target via padding, not just line-height, per mobile
+   touch-target guidance. */
+.legal-links { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 2px 10px; max-width: 190px; }
+.legal-links a {
+  font-size: 11px; color: var(--text-secondary); text-decoration: underline;
+  padding: 4px 0; display: inline-block;
+}
+.legal-links a:hover { color: var(--text); }
+
 .avatar {
   width: 36px; height: 36px; border-radius: 50%;
   background: var(--brand-tint); border: 1px solid var(--border-strong);
+  padding: 0; display: flex; align-items: center; justify-content: center;
+  color: var(--text-secondary); font: inherit; cursor: pointer;
+}
+.avatar:hover { background: var(--border-strong); }
+.avatar[hidden] { display: none; }
+
+/* Skip-link target and the four .screen elements' actual DOM parent (was
+   .app-shell directly; wrapping them doesn't change how they need to lay
+   out, so this is a flex passthrough: fills the remaining .app-shell
+   height, and each .screen still sizes itself with flex:1 as before). */
+#main-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
 .screen {
@@ -86,14 +137,15 @@ button { font-family: inherit; cursor: pointer; }
 .screen.active { display: flex; }
 
 .btn-primary {
-  height: 52px; border-radius: 9999px; background: var(--brand);
+  height: 52px; border-radius: 9999px; background: var(--brand-hover);
   border: none; display: flex; align-items: center; justify-content: center;
   gap: 8px; color: #fff; font-weight: 700; font-size: 15px; width: 100%;
-  transition: background 0.15s ease;
+  transition: filter 0.15s ease;
 }
-.btn-primary:hover { background: var(--brand-hover); }
+.btn-primary:hover { filter: brightness(0.92); }
 .btn-primary:disabled { background: var(--border-strong); color: var(--text-tertiary); }
-.btn-primary:focus-visible, .nav-item:focus-visible, .card:focus-visible {
+.btn-primary:focus-visible, .nav-item:focus-visible, .card:focus-visible,
+.tab:focus-visible, .vault-toggle:focus-visible, .avatar:focus-visible {
   outline: 2px solid var(--brand); outline-offset: 2px;
 }
 
@@ -106,15 +158,35 @@ button { font-family: inherit; cursor: pointer; }
   border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 8px;
   box-shadow: 0 1px 3px rgba(26, 24, 21, 0.05);
 }
+/* Same [hidden]-vs-class-rule tie as .lex-dialog/.a11y-panel below: without
+   this, #new-client-form-card (class="card" ... hidden) never actually
+   hides, since the .card rule's `display: flex` (an author rule) beats the
+   UA default `[hidden] { display: none }` even while the attribute is set.
+   Toggling `hidden` in JS still "worked" in the sense of adding/removing
+   the attribute; it just never hid anything on screen. */
+.card[hidden] { display: none; }
 .card-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .card-title { font-weight: 600; font-size: 15px; }
 .card-meta { font-size: 13px; color: var(--text-secondary); }
 
 .pill { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 9999px; }
-.pill-amber { background: var(--amber-bg); color: var(--amber); }
-.pill-green { background: var(--green-bg); color: var(--green); }
-.pill-red { background: var(--red-bg); color: var(--red); }
+.pill-amber { background: var(--amber-bg); color: var(--amber-text); }
+.pill-green { background: var(--green-bg); color: var(--green-text); }
+.pill-red { background: var(--red-bg); color: var(--red-text); }
 .pill-neutral { background: var(--border); color: var(--text-secondary); }
+
+/* Visually-hidden but screen-reader-readable: for input labels, and the
+   skip link's resting state (focus below pulls it back on screen). */
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+.skip-link:focus {
+  position: fixed; width: auto; height: auto; margin: 0; overflow: visible;
+  clip: auto; white-space: normal; top: 8px; inset-inline-start: 8px; z-index: 100;
+  background: var(--brand-hover); color: #fff; font-weight: 700; font-size: 14px;
+  padding: 10px 18px; border-radius: 9999px;
+}
 
 .bottom-nav {
   position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
@@ -128,7 +200,7 @@ button { font-family: inherit; cursor: pointer; }
   background: none; border: none; display: flex; flex-direction: column;
   align-items: center; gap: 4px; color: var(--text-tertiary);
 }
-.nav-item.active { color: var(--brand); font-weight: 600; }
+.nav-item.active { color: var(--brand-hover); font-weight: 600; }
 .nav-item svg { width: 22px; height: 22px; }
 .nav-item span { font-size: 10px; }
 
@@ -145,9 +217,124 @@ button { font-family: inherit; cursor: pointer; }
 
 .tabs { display: flex; gap: 8px; flex-wrap: wrap; }
 .tab { padding: 8px 16px; border-radius: 9999px; font-size: 13px; color: var(--text-secondary); background: none; border: 1px solid transparent; }
-.tab.active { background: var(--brand); color: #fff; font-weight: 600; }
+.tab.active { background: var(--brand-hover); color: #fff; font-weight: 600; }
 
-.tag { font-size: 10.5px; font-weight: 600; padding: 3px 9px; border-radius: 9999px; background: var(--brand-tint); color: var(--brand); display: inline-block; }
+.tag { font-size: 10.5px; font-weight: 600; padding: 3px 9px; border-radius: 9999px; background: var(--brand-tint); color: var(--brand-hover); display: inline-block; }
 
 .vault-body { display: none; flex-direction: column; gap: 6px; padding-top: 4px; border-top: 1px solid var(--border); margin-top: 4px; }
 .vault-body.open { display: flex; }
+
+/* LALUM LEX chat widget. Anchored to .app-shell (position:relative, already
+   the viewport-height column bottom-nav centers itself against) rather than
+   the viewport directly, so it stays bound to the visual app column instead
+   of drifting to the real screen edge on a wide desktop viewport. */
+.lex-fab {
+  position: absolute; bottom: calc(var(--nav-h) + 16px); inset-inline-end: 16px;
+  width: 56px; height: 56px; border-radius: 50%; background: var(--brand);
+  border: none; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 14px rgba(26, 24, 21, 0.22); z-index: 50;
+}
+.lex-fab svg { width: 24px; height: 24px; }
+.lex-fab:hover { background: var(--brand-hover); }
+.lex-fab:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+
+.lex-dialog {
+  position: absolute; inset: 0; z-index: 60; background: var(--bg);
+  display: flex; flex-direction: column;
+}
+/* Without this, [hidden] loses to the class rule above: both are
+   specificity (0,1,0), and an author rule beats the UA default
+   `[hidden] { display: none }` at an equal specificity tie. */
+.lex-dialog[hidden] { display: none; }
+.lex-header {
+  height: var(--header-h); flex-shrink: 0; display: flex; align-items: center;
+  justify-content: space-between; padding: 0 18px; border-bottom: 1px solid var(--border);
+}
+.lex-disclaimer {
+  font-size: 11.5px; color: var(--text-secondary); background: var(--brand-tint);
+  padding: 8px 18px; flex-shrink: 0;
+}
+.lex-messages {
+  flex: 1; overflow-y: auto; padding: 16px 18px; display: flex;
+  flex-direction: column; gap: 10px;
+}
+.lex-bubble {
+  max-width: 88%; padding: 10px 14px; border-radius: 14px; font-size: 14px;
+  line-height: 1.55; white-space: pre-wrap;
+}
+.lex-bubble-user {
+  align-self: flex-end; background: var(--brand-hover); color: #fff; border-end-end-radius: 4px;
+}
+.lex-bubble-assistant {
+  align-self: flex-start; background: var(--surface); border: 1px solid var(--border);
+  color: var(--text); border-end-start-radius: 4px;
+}
+.lex-status { align-self: flex-start; font-size: 12.5px; color: var(--text-tertiary); padding: 0 4px; }
+
+/* Accessibility widget (a11y.js). Fixed by default so it stays pinned while
+   reading a long standalone page (privacy.html etc.); on index.html the
+   app-shell override below binds it to the visual app column instead,
+   same reasoning as .lex-fab above and positioned as its mirror image on
+   the opposite side (inset-inline-start here vs. -end on .lex-fab), so the
+   two sit together the way lalumapp.com's own chat + accessibility icons
+   do, without sharing any code with that site. */
+.a11y-fab {
+  position: fixed; bottom: 16px; inset-inline-start: 16px;
+  width: 52px; height: 52px; border-radius: 50%; background: #2F6FED;
+  border: none; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 14px rgba(26, 24, 21, 0.22); z-index: 55;
+}
+.app-shell .a11y-fab { position: absolute; bottom: calc(var(--nav-h) + 16px); }
+.a11y-fab svg { width: 24px; height: 24px; }
+.a11y-fab:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+
+.a11y-panel {
+  position: fixed; bottom: 76px; inset-inline-start: 16px; z-index: 55;
+  width: 280px; max-width: calc(100vw - 32px); background: var(--surface);
+  border: 1px solid var(--border); border-radius: 16px; padding: 18px;
+  box-shadow: 0 8px 28px rgba(26, 24, 21, 0.18);
+}
+.app-shell .a11y-panel { position: absolute; bottom: calc(var(--nav-h) + 76px); }
+.a11y-panel[hidden] { display: none; }
+.a11y-panel h2 { font-size: 15px; margin: 0 0 12px; }
+.a11y-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.a11y-row span { font-size: 13.5px; }
+.a11y-textbtns { display: flex; gap: 8px; }
+.a11y-textbtns button {
+  flex: 1; height: 36px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--surface-raised); font-weight: 700; font-size: 14px; color: var(--text);
+}
+.a11y-textbtns button:disabled { opacity: .4; }
+.a11y-reset {
+  width: 100%; height: 36px; border-radius: 8px; border: 1px solid var(--border);
+  background: none; color: var(--text-secondary); font-size: 13px; margin-top: 4px;
+}
+.a11y-panel .a11y-statement {
+  font-size: 11.5px; color: var(--text-tertiary); line-height: 1.5; margin-top: 10px;
+  padding-top: 10px; border-top: 1px solid var(--border);
+}
+
+/* Real, working adjustments, applied via attributes on <html> (set before
+   first paint by a11y.js's own lazy read of localStorage) — same technique
+   as .reveal above's no-JS/reduced-motion fail-open, but for a visitor's
+   explicit choice instead of a system preference. */
+html[data-a11y-fontscale="1.15"] { font-size: 115%; }
+html[data-a11y-fontscale="1.3"] { font-size: 130%; }
+html[data-a11y-fontscale="1.45"] { font-size: 145%; }
+html[data-a11y-contrast] {
+  --bg: #ffffff; --surface: #ffffff; --surface-raised: #ffffff;
+  --border: #000000; --border-strong: #000000; --text: #000000;
+  --text-secondary: #000000; --text-tertiary: #1a1a1a;
+}
+html[data-a11y-underline] a:not(.no-force-underline) { text-decoration: underline; text-underline-offset: 3px; }
+.lex-form {
+  flex-shrink: 0; display: flex; gap: 8px; align-items: center; padding: 12px 18px;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--border); background: var(--surface);
+}
+.lex-form input {
+  flex: 1; height: 44px; border-radius: 9999px; background: var(--bg);
+  border: 1px solid var(--border-strong); padding: 0 16px; color: var(--text);
+  font-family: inherit; font-size: 14px;
+}
+.lex-form input:disabled { opacity: 0.6; }
