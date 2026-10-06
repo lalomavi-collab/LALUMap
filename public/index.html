@@ -86,6 +86,10 @@
 
     <!-- ביקורת AI -->
     <main class="screen" id="screen-risk" aria-labelledby="screen-title" hidden>
+      <!-- PII Shield status, same shared state as the badge in LEX's header. -->
+      <div class="pii-badge-row">
+        <button type="button" class="pii-badge" data-pii-badge aria-haspopup="dialog" aria-controls="pii-drawer" aria-expanded="false">PII Shield</button>
+      </div>
       <!-- Mode switcher: the four practice pillars share this one audit view
            instead of each getting its own screen. Still sample/static data
            (see README — this screen has no schema behind it yet); the
@@ -193,6 +197,8 @@
                not just an internal implementation detail. -->
           <p style="margin:2px 0 0; font-size:11px; color:var(--text-secondary);">עקרון ההצמדה של LALUM: מבוסס רק על מקורות מאומתים</p>
         </div>
+        <!-- PII Shield status (pii-ui.js renders it); opens #pii-drawer. -->
+        <button type="button" class="pii-badge" data-pii-badge aria-haspopup="dialog" aria-controls="pii-drawer" aria-expanded="false">PII Shield</button>
         <button id="lex-close" type="button" aria-label="סגירת הצ׳אט" style="background:none; border:none; color:var(--text-secondary); width:32px; height:32px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
@@ -204,6 +210,21 @@
         <input id="lex-input" type="text" placeholder="שאלה, או פקודה כמו ‎/recir" autocomplete="off">
         <button type="submit" class="btn-primary" style="width:auto; height:40px; padding:0 18px;">שליחה</button>
       </form>
+    </div>
+
+    <!-- PII Inspector drawer (pii-ui.js): what was masked in the last LEX
+         request, and the original vs. the masked text actually sent. All
+         content is rendered on the device from the in-memory vault. -->
+    <div id="pii-drawer" class="pii-drawer" role="dialog" aria-modal="true" aria-labelledby="pii-drawer-title" hidden>
+      <div class="pii-drawer-panel">
+        <div class="pii-drawer-header">
+          <h2 id="pii-drawer-title" class="display">PII Shield</h2>
+          <button id="pii-drawer-close" type="button" aria-label="סגירת פירוט ההתממה" class="pii-icon-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div id="pii-drawer-body" class="pii-drawer-body"></div>
+      </div>
     </div>
 
     <!-- Accessibility widget (a11y.js): text size, high contrast, underline
@@ -249,6 +270,8 @@
   <script src="/config.js"></script>
   <script src="/app.js"></script>
   <script src="/data.js"></script>
+  <script src="/pii-shield.js"></script>
+  <script src="/pii-ui.js"></script>
   <script src="/lex.js"></script>
   <script>
     if ('serviceWorker' in navigator) {

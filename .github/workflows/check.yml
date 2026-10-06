@@ -13,3 +13,4 @@ jobs:
         with:
           node-version: 20
       - run: node scripts/check.mjs
+      - run: node scripts/pii-shield.test.mjs

@@ -40,6 +40,31 @@ The actual daily send (`lalum-newsletter-daily`) is on a `pg_cron` schedule (06:
 
 The **published Artifact mockup** (Claude Design canvas / the standalone `LALUM App` demo) is intentionally **not** wired to Supabase: an Artifact's CSP blocks `fetch`/XHR to any host outside its own origin (Google Fonts excepted), so it technically cannot reach `supabase.co` even if code were added. It stays static/sample content — that's a hard technical boundary, not a policy choice, and it's the reason the shareable Artifact link can never leak real client data.
 
+## PII Shield (client-side anonymization for LALUM LEX)
+
+Every message to LALUM LEX is masked **in the browser** before it is sent: names, Israeli ID / passport / company
+numbers, emails, phones, land-registry block/parcel numbers and (opt-in) amounts become semantic tokens such as
+`[CLIENT_NAME_1]` or `[ID_NUMBER_1]`. The plain text never reaches Supabase or the model provider; the reply is
+unmasked on the device.
+
+- `public/pii-shield.js`: detection + masking engine (regex, context words, Israeli ID check digit) and the ephemeral
+  vault (AES-256-GCM with a non-extractable WebCrypto key; HMAC reverse index so no plaintext sits in its maps). No
+  DOM, unit-tested by `scripts/pii-shield.test.mjs` (also in CI).
+- `public/pii-ui.js`: status badges (LEX header + ביקורת AI screen), the PII Inspector drawer (entities by category;
+  original / sent-to-LLM / side-by-side), audit logging. Fails closed: if masking can't run, the message isn't sent.
+- `public/pii-settings.html` (+ `.js`): master switch, per-category rules, and the matter's client / adverse-party
+  names. Rules in `localStorage`; names only in `sessionStorage`.
+- Audit: `public.lalum_pii_audit_log` on `lalum-app` (`supabase/migrations/20261006_lalum_pii_audit_log.sql`).
+  Counts per category only, never text or values. Append-only by trigger (UPDATE/DELETE/TRUNCATE raise, even for the
+  owner); signed-in users insert their own rows, admins read. `user_id` and `anonymized_at` are stamped server-side;
+  `is_zero_retention_verified` is forced `false` from the client, since a browser cannot attest the model
+  provider's retention terms.
+
+Known limits: no statistical NER (too heavy for a phone), so a name is masked only if it's in the matter's name
+list, follows a title (מר, גב׳, עו״ד, ד״ר, Mr., Dr.) or precedes בע״מ. The vault lives for one page load (one LEX
+conversation) rather than one request, because the masked history is re-sent each turn and replies can reference
+earlier tokens; it is purged on `pagehide`.
+
 ## Verifying this actually works
 
 This sandbox's outbound network policy blocks `cdn.jsdelivr.net` and `*.supabase.co`, so the Supabase Auth flow and data fetch could not be exercised end-to-end from here — only the graceful-failure path (library fails to load → visible error, not a blank screen) was verified. **Before relying on this in production**, open the deployed page in a normal browser and confirm: the magic-link sign-in actually arrives by email, an admin session shows real contacts, a non-admin session shows the "no permission" state (not an error), and a signed-in user can post to and see the community feed.
