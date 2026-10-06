@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>הגדרות פרטיות ו-PII Shield | LALUM</title>
+  <meta name="description" content="הגדרות ההתממה האוטומטית של פרטים מזהים לפני שליחה למנוע ה-AI.">
+  <meta name="robots" content="noindex, follow">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Manrope:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/a11y.js"></script>
+  <style>
+    body { min-height: auto; }
+    .legal-wrap { max-width: 720px; margin: 0 auto; padding: 32px 22px 80px; }
+    .legal-wrap h1 { font-size: 26px; margin-bottom: 6px; }
+    .legal-wrap h2 { font-size: 17px; margin: 28px 0 10px; }
+    .legal-wrap p { font-size: 14.5px; line-height: 1.7; color: var(--text-secondary); }
+    .back-link { display: inline-block; margin-bottom: 24px; font-size: 13px; color: var(--text-secondary); }
+  </style>
+</head>
+<body>
+  <!-- PII Shield settings. Spec path was /settings/privacy; this app is a
+       flat static site (every page lives at the root of public/, which is
+       also what scripts/check.mjs scans), so it lives at /pii-settings.html.
+       Rules are saved in localStorage; client / party names, being client
+       data themselves, only in sessionStorage (see pii-shield.js). -->
+  <div class="legal-wrap">
+    <a href="/" class="back-link">&#8592; חזרה לאפליקציה</a>
+    <h1 class="display">פרטיות ו-PII Shield</h1>
+    <p>
+      PII Shield מזהה פרטים מזהים בטקסט שאתם שולחים ל-LALUM LEX ומחליף אותם בטוקנים (למשל [CLIENT_NAME_1],
+      [ID_NUMBER_1]) בתוך הדפדפן, לפני שהטקסט יוצא מהמכשיר. התשובה מפוענחת בחזרה במכשיר. הטקסט הגלוי אינו מגיע
+      לשרתי LALUM ואינו מגיע לספק מודל ה-AI.
+    </p>
+
+    <form id="pii-settings-form">
+      <div class="card" style="gap:0; margin-top:18px;">
+        <label class="pii-switch-row">
+          <span>Enable Lalum PII Shield<small>התממה אוטומטית של פרטים מזהים לפני שליחה</small></span>
+          <input type="checkbox" id="pii-enabled">
+        </label>
+      </div>
+
+      <h2>כללי הסתרה</h2>
+      <div class="card" style="gap:0;" id="pii-rules">
+        <label class="pii-switch-row">
+          <span>Mask Names<small>שמות לקוח וצדדים מהרשימה למטה, שמות אחרי תואר (מר, גב׳, עו״ד, ד״ר), שמות חברות לפני בע״מ</small></span>
+          <input type="checkbox" id="pii-maskNames">
+        </label>
+        <label class="pii-switch-row">
+          <span>Mask ID Numbers<small>ת.ז. (כולל ספרת ביקורת), דרכון, ח.פ. / ח.צ. / ע.ר.</small></span>
+          <input type="checkbox" id="pii-maskIds">
+        </label>
+        <label class="pii-switch-row">
+          <span>Mask Contact Details<small>כתובות דוא״ל ומספרי טלפון</small></span>
+          <input type="checkbox" id="pii-maskContact">
+        </label>
+        <label class="pii-switch-row">
+          <span>Mask Land Registry<small>מספרי גוש, חלקה ותת-חלקה</small></span>
+          <input type="checkbox" id="pii-maskLand">
+        </label>
+        <label class="pii-switch-row">
+          <span>Mask Financial Amounts<small>כבוי כברירת מחדל: הסתרת סכומים פוגעת לרוב בשאלה המשפטית עצמה</small></span>
+          <input type="checkbox" id="pii-maskAmounts">
+        </label>
+      </div>
+
+      <h2>שמות להסתרה בתיק הנוכחי</h2>
+      <p>שם בכל שורה. נשמרים רק לחלון הדפדפן הנוכחי ונמחקים בסגירתו.</p>
+      <label for="pii-clientNames" class="pii-group-label">שמות הלקוח</label>
+      <textarea id="pii-clientNames" class="pii-textarea" dir="auto" autocomplete="off" spellcheck="false"></textarea>
+      <label for="pii-partyNames" class="pii-group-label" style="display:block; margin-top:12px;">שמות הצד שכנגד וצדדים נוספים</label>
+      <textarea id="pii-partyNames" class="pii-textarea" dir="auto" autocomplete="off" spellcheck="false"></textarea>
+
+      <div style="display:flex; gap:10px; margin-top:18px;">
+        <button type="submit" class="btn-primary" style="height:44px;">שמירה</button>
+      </div>
+      <div id="pii-settings-status" aria-live="polite" style="font-size:13px; margin-top:10px; color:var(--green-text);"></div>
+    </form>
+
+    <h2>מה PII Shield לא עושה</h2>
+    <p>
+      הזיהוי מבוסס על תבניות קבועות ולא על מודל שפה. שם שלא הוזן ברשימה ואינו מופיע אחרי תואר או לפני בע״מ לא יוסווה,
+      ופרטים מזהים בניסוח חופשי (למשל "השכן מהקומה השלישית ברחוב הרצל") לא יזוהו. מגירת הבקרה מציגה בכל בקשה מה בדיוק
+      נשלח, כדי שתוכלו לוודא זאת בעצמכם.
+    </p>
+  </div>
+
+  <button id="a11y-fab" type="button" class="a11y-fab" aria-haspopup="dialog" aria-expanded="false" aria-controls="a11y-panel" aria-label="אפשרויות נגישות">
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <circle cx="16" cy="5" r="1.8" fill="#fff"/>
+      <rect x="13.6" y="7.6" width="2.2" height="4.6" rx="1.1" fill="#fff"/>
+      <path d="M14.4 12.2 9.5 15.6" stroke="#fff" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+      <circle cx="8.7" cy="16.8" r="4.2" fill="none" stroke="#fff" stroke-width="1.6"/>
+      <circle cx="8.7" cy="16.8" r="0.8" fill="#fff"/>
+      <path d="M8.7 16.8 12 14.6" stroke="#fff" stroke-width="1" stroke-linecap="round"/>
+      <path d="M12.7 20.6h2" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+    </svg>
+  </button>
+  <div id="a11y-panel" class="a11y-panel" role="dialog" aria-label="אפשרויות נגישות" hidden>
+    <h2 class="display">אפשרויות נגישות</h2>
+    <div class="a11y-row">
+      <span>גודל טקסט</span>
+      <div class="a11y-textbtns">
+        <button type="button" id="a11y-decrease" aria-label="הקטנת טקסט" style="font-size:12px;">א</button>
+        <button type="button" id="a11y-increase" aria-label="הגדלת טקסט" style="font-size:20px;">א</button>
+      </div>
+    </div>
+    <label class="a11y-row">
+      <span>ניגודיות גבוהה</span>
+      <input type="checkbox" id="a11y-contrast-toggle">
+    </label>
+    <label class="a11y-row">
+      <span>קו תחתון לקישורים</span>
+      <input type="checkbox" id="a11y-underline-toggle">
+    </label>
+    <button type="button" id="a11y-reset" class="a11y-reset">איפוס לברירת מחדל</button>
+    <p class="a11y-statement">
+      האפליקציה שואפת לעמוד בתקן WCAG 2.0 ברמה AA. נתקלתם בבעיית נגישות?
+      <a href="/accessibility.html">ספרו לנו כאן</a>.
+    </p>
+  </div>
+  <script src="/pii-shield.js"></script>
+  <script src="/pii-settings.js"></script>
+</body>
+</html>

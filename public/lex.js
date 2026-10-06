@@ -10,6 +10,11 @@
 // load (never written to Supabase), since there's no product reason yet to
 // retain what could be a confidential legal question, and every retained
 // record is something someone has to secure and account for.
+//
+// PII Shield (pii-shield.js / pii-ui.js): every user turn is masked on the
+// device before it is sent, and apiHistory holds only masked text, so the
+// Edge Function and the model never see the plain names / IDs / phones.
+// Replies are unmasked on the device before they're rendered.
 
 (function () {
   const fab = document.getElementById('lex-fab');
@@ -57,7 +62,19 @@
   async function send(userText, opts) {
     const visible = !(opts && opts.hideUserTurn);
     if (userText && visible) addBubble('user', userText);
-    apiHistory = [...apiHistory, { role: 'user', content: userText }];
+
+    // Fail closed: if the shield is on and masking fails, nothing is sent.
+    const shield = window.LalumPIIShield;
+    let shielded = { masked: userText, entities: [], count: 0, enabled: false };
+    if (shield) {
+      try {
+        shielded = await shield.maskOutgoing(userText);
+      } catch {
+        addBubble('assistant', 'ההודעה לא נשלחה: לא ניתן היה להתמים את הפרטים המזהים בדפדפן זה. ניתן לנסות בדפדפן עדכני, או לכבות את PII Shield בהגדרות.');
+        return;
+      }
+    }
+    apiHistory = [...apiHistory, { role: 'user', content: shielded.masked }];
 
     if (!client) {
       addBubble('assistant', 'שירות הצ׳אט אינו זמין כרגע (בעיית רשת). רעננו את הדף ונסו שוב.');
@@ -79,7 +96,19 @@
         return;
       }
       apiHistory = [...apiHistory, { role: 'assistant', content: data.reply }];
-      addBubble('assistant', data.reply);
+      const restored = shield ? await shield.unmaskIncoming(data.reply) : data.reply;
+      addBubble('assistant', restored);
+      if (shield && visible) {
+        shield.recordExchange({
+          original: userText, masked: shielded.masked,
+          maskedReply: data.reply, restoredReply: restored,
+          entities: shielded.entities, count: shielded.count,
+        });
+        shield.audit(client, {
+          surface: 'lex', matterId: null, count: shielded.count,
+          entities: shielded.entities, enabled: shielded.enabled,
+        });
+      }
     } catch {
       statusRow.remove();
       addBubble('assistant', 'לא הצלחנו לקבל תשובה כרגע. נסו שוב בעוד רגע.');
@@ -100,6 +129,15 @@
     if (apiHistory.length > 0) return; // only once per page load
     send('/menu', { hideUserTurn: true });
   }
+
+  // pii-ui.js purged the vault (page left and restored from bfcache): the
+  // masked history can't be unmasked any more, so start a fresh conversation.
+  document.addEventListener('lalum:pii-vault-reset', () => {
+    apiHistory = [];
+    messagesEl.textContent = '';
+    opened = false;
+    if (!dialog.hidden) { opened = true; openMenu(); }
+  });
 
   let lastFocused = null;
 

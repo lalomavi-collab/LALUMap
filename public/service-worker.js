@@ -13,7 +13,8 @@
 // index.html's own <head> actually links (apple-touch-icon + both
 // favicons) — v2 cached every CSS/JS the shell needs but still missed
 // these, so a fully offline launch still had to hit the network for them.
-const CACHE_NAME = 'lalum-shell-v3';
+// v4: PII Shield (pii-shield.js, pii-ui.js, pii-settings.html/.js).
+const CACHE_NAME = 'lalum-shell-v4';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -23,6 +24,10 @@ const APP_SHELL = [
   '/app.js',
   '/data.js',
   '/lex.js',
+  '/pii-shield.js',
+  '/pii-ui.js',
+  '/pii-settings.html',
+  '/pii-settings.js',
   '/a11y.js',
   '/icons/apple-touch-icon.png',
   '/icons/favicon-32.png',
