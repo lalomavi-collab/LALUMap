@@ -60,6 +60,15 @@ test('assertClean fails closed on residual PII', async () => {
   assert.doesNotThrow(() => a.assertClean('צרו קשר: [EMAIL_1] וטלפון [PHONE_1]'));
 });
 
+test('assertClean also catches a heuristic-only name (title-detected), and honours the allowlist', async () => {
+  const a = await mk();
+  // "מר דוד כהן" is caught only by the Hebrew-title heuristic, not by structured/dictionary detectors.
+  assert.throws(() => a.assertClean('מר דוד כהן חתם על ההסכם'), PiiLeakError);
+  // An allowlisted name must not trip the guard (mirrors detect()'s allowlist filter).
+  const allowed = new LalumAnonymizerProxy({ vault: await EphemeralVault.create(), allowlist: ['דוד כהן'] });
+  assert.doesNotThrow(() => allowed.assertClean('מר דוד כהן חתם על ההסכם'));
+});
+
 test('vault seals values and wipes on dispose', async () => {
   const v = await EphemeralVault.create();
   const t = await v.tokenize('ID_NUMBER', '000000018', '000000018');
