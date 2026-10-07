@@ -24,8 +24,8 @@ const corpus: Item[] = [
   { key: 't10', text: 'עו"ד יוסי לוינסון והשמאי רונן אדלר הגישו חוות דעת.', mustMask: ['יוסי לוינסון', 'רונן אדלר'] },
   { key: 't11', text: 'המנוח אברהם בן-דוד ויורשיו, הנתבעת שרה מזרחי טענה.', mustMask: ['אברהם בן-דוד', 'שרה מזרחי'] },
   { key: 't12', text: 'דרכון מספר 12345678 של התובע, ו-Mr. John Smith.', mustMask: ['12345678', 'John Smith'] },
-  { key: 't14', text: `כתובת: רחוב הרצל 15, תל אביב. אמר ישראל ישראלי כי ${badId} אינו ת"ז.`, mustMask: [], knownGaps: ['הרצל 15', 'ישראל ישראלי'] },
-  { key: 't15', text: `נציג מטעם נדלן פרימיום בע״מ ת.ז. ${id1} ואימייל Info@Test-Firm.com; ח"פ 51-234567-8.`, mustMask: ['נדלן פרימיום בע״מ', id1, 'Info@Test-Firm.com'], knownGaps: ['51-234567-8'] },
+  { key: 't14', text: `כתובת: רחוב הרצל 15, תל אביב. אמר ישראל ישראלי כי ${badId} אינו ת"ז.`, mustMask: ['הרצל 15'], knownGaps: ['ישראל ישראלי'] },
+  { key: 't15', text: `נציג מטעם נדלן פרימיום בע״מ ת.ז. ${id1} ואימייל Info@Test-Firm.com; ח"פ 51-234567-8.`, mustMask: ['נדלן פרימיום בע״מ', id1, 'Info@Test-Firm.com', '51-234567-8'] },
 ];
 
 for (const item of corpus) {
@@ -50,5 +50,5 @@ test('pii corpus: known gaps are documented (this fails when the engine improves
     const r = await a.anonymize(item.text);
     for (const span of item.knownGaps) if (r.masked.includes(span)) stillLeaking.push(span);
   }
-  assert.deepEqual(stillLeaking.sort(), ['51-234567-8', 'הרצל 15', 'ישראל ישראלי'].sort());
+  assert.deepEqual(stillLeaking.sort(), ['ישראל ישראלי']);
 });

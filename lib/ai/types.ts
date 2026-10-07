@@ -4,7 +4,7 @@
 export type PracticeArea = 'REAL_ESTATE' | 'COMMERCIAL_MA' | 'LABOR_LAW' | 'AI_GOVERNANCE' | 'LITIGATION';
 export const PRACTICE_AREAS: readonly PracticeArea[] = ['REAL_ESTATE', 'COMMERCIAL_MA', 'LABOR_LAW', 'AI_GOVERNANCE', 'LITIGATION'];
 
-export type PiiKind = 'ID_NUMBER' | 'COMPANY_REG' | 'EMAIL' | 'PHONE' | 'LAND_PARCEL' | 'CLIENT_NAME' | 'BANK_ACCOUNT';
+export type PiiKind = 'ID_NUMBER' | 'COMPANY_REG' | 'EMAIL' | 'PHONE' | 'LAND_PARCEL' | 'CLIENT_NAME' | 'BANK_ACCOUNT' | 'ADDRESS';
 export type PartyRole = 'CLIENT' | 'ADVERSE' | 'OTHER';
 export type TrafficLight = 'GREEN' | 'YELLOW' | 'RED';
 /** Stored (Prisma-compatible) conflict status. GREEN=CLEAN, YELLOW=POTENTIAL, RED=DIRECT_CONFLICT. */
