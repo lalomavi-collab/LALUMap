@@ -222,7 +222,7 @@
 
   async function loadClients(session) {
     if (!session) {
-      clientsGate.innerHTML = authGateHTML('נדרשת התחברות כמנהל/ת כדי לצפות ברשימת הלקוחות האמיתית.');
+      clientsGate.innerHTML = authGateHTML('כניסה לשותפים ולמנהלים: התחברו כדי לצפות ברשימת הלקוחות האמיתית ולפתוח את קוקפיט התיקים.');
       wireAuthForm(clientsGate);
       clientsList.innerHTML = '';
       return;
