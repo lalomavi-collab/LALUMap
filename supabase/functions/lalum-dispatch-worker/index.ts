@@ -9,10 +9,11 @@
 // Messages are built ONLY from whitelisted enum values and a matter link: no title, no names,
 // no document text ever reaches an e-mail or a phone. A matter title is masked, but not worth the risk.
 //
-// WhatsApp rules: a business may send free text only inside 24h of the recipient's last message to
-// the business. Outside it, Meta requires an approved template. Set WHATSAPP_TEMPLATE_NEW_MATTER
-// (a template with 3 body variables: practice area, risk level, link; language WHATSAPP_TEMPLATE_LANG,
-// default "he") to enable that path. Without it, an out-of-window WhatsApp is marked SKIPPED, not retried forever.
+// WhatsApp carries NO matter details at all (it transits Meta): only a generic line and the link, which
+// requires login. Rules: a business may send free text only inside 24h of the recipient's last message to
+// the business. Outside it, Meta requires an approved template. Set WA_NOTIFY_TEMPLATE (a UTILITY template
+// with ONE body variable, the link, and fixed text after it; language WA_NOTIFY_TEMPLATE_LANG, default "he")
+// to enable that path. Without it, an out-of-window WhatsApp is marked SKIPPED, not retried forever.
 // deno-lint-ignore-file no-explicit-any
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -22,10 +23,12 @@ const sb: any = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABA
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY1") ?? Deno.env.get("RESEND_API_KEY") ?? "";
 const FROM = Deno.env.get("LALUM_FROM_EMAIL") ?? "LALUM <no-reply@lalumapp.com>";
 const NOTIFY_TO = Deno.env.get("LALUM_NOTIFY_TO") ?? "avraham@lalum.co";
-const WA_TOKEN = Deno.env.get("WHATSAPP_TOKEN") ?? "";
-const WA_PHONE_ID = Deno.env.get("WHATSAPP_PHONE_NUMBER_ID") ?? "";
-const WA_TEMPLATE = Deno.env.get("WHATSAPP_TEMPLATE_NEW_MATTER") ?? "";
-const WA_LANG = Deno.env.get("WHATSAPP_TEMPLATE_LANG") ?? "he";
+// Dedicated WA_NOTIFY_* secrets win, so the notifier can use its own number without repointing the inbound bot
+// (lalum-whatsapp-webhook reads WHATSAPP_TOKEN / WHATSAPP_PHONE_NUMBER_ID).
+const WA_TOKEN = Deno.env.get("WA_NOTIFY_TOKEN") ?? Deno.env.get("WHATSAPP_TOKEN") ?? "";
+const WA_PHONE_ID = Deno.env.get("WA_NOTIFY_PHONE_ID") ?? Deno.env.get("WHATSAPP_PHONE_NUMBER_ID") ?? "";
+const WA_TEMPLATE = Deno.env.get("WA_NOTIFY_TEMPLATE") ?? Deno.env.get("WHATSAPP_TEMPLATE_NEW_MATTER") ?? "";
+const WA_LANG = Deno.env.get("WA_NOTIFY_TEMPLATE_LANG") ?? Deno.env.get("WHATSAPP_TEMPLATE_LANG") ?? "he";
 
 const PRACTICE: Record<string, string> = { REAL_ESTATE: 'נדל"ן / תמ"א 38', COMMERCIAL_MA: "מסחרי / M&A", LABOR_LAW: "דיני עבודה", AI_GOVERNANCE: "ממשל AI", LITIGATION: "ליטיגציה" };
 const RISK: Record<string, string> = { HIGH_RISK: "סיכון גבוה", CAUTION: "זהירות", COMPLIANT: "תקין" };
@@ -86,14 +89,14 @@ async function sendWhatsApp(phone: string | null, c: ReturnType<typeof content>)
   if (!WA_TOKEN || !WA_PHONE_ID) return { result: "SKIPPED", error: "WHATSAPP_NOT_CONFIGURED" };
   try {
     // 1) free text, valid only inside the 24h window
-    const t = await waPost({ messaging_product: "whatsapp", to: phone, type: "text", text: { body: c.text } });
+    const t = await waPost({ messaging_product: "whatsapp", to: phone, type: "text", text: { body: `נקלט תיק חדש ומחכה לבדיקתך.\n${c.link}` } });
     if (t.ok) return { result: "SENT" };
     if (t.code !== 131047) return t.status >= 500 || t.status === 429 ? { result: "RETRY", error: `wa ${t.status}` } : { result: "SKIPPED", error: `wa ${t.status}/${t.code ?? ""}` };
     // 2) outside the window: approved template, if one is configured
     if (!WA_TEMPLATE) return { result: "SKIPPED", error: "NEEDS_TEMPLATE_OR_24H_WINDOW" };
     const tpl = await waPost({
       messaging_product: "whatsapp", to: phone, type: "template",
-      template: { name: WA_TEMPLATE, language: { code: WA_LANG }, components: [{ type: "body", parameters: [c.practice, c.risk, c.link].map((text) => ({ type: "text", text })) }] },
+      template: { name: WA_TEMPLATE, language: { code: WA_LANG }, components: [{ type: "body", parameters: [c.link].map((text) => ({ type: "text", text })) }] },
     });
     if (tpl.ok) return { result: "SENT" };
     return tpl.status >= 500 || tpl.status === 429 ? { result: "RETRY", error: `wa tpl ${tpl.status}` } : { result: "SKIPPED", error: `wa tpl ${tpl.status}/${tpl.code ?? ""}` };
