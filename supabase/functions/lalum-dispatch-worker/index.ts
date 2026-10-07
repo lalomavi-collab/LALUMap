@@ -6,11 +6,11 @@
 // Invoked every minute by pg_cron (job "lalum-dispatch-worker"); authenticated by the
 // x-lalum-worker header, checked in Postgres against lalum_private.worker_keys. verify_jwt is off.
 //
-// Messages are built ONLY from whitelisted enum values and a matter link: no title, no names,
-// no document text ever reaches an e-mail or a phone. A matter title is masked, but not worth the risk.
+// Messages carry NO matter details on any channel (e-mail transits Resend, WhatsApp transits Meta):
+// only a generic line and a link that requires login. Practice area, risk level and conflict status are
+// visible only after signing in. No title, names or document text ever leaves.
 //
-// WhatsApp carries NO matter details at all (it transits Meta): only a generic line and the link, which
-// requires login. Rules: a business may send free text only inside 24h of the recipient's last message to
+// WhatsApp note:  Rules: a business may send free text only inside 24h of the recipient's last message to
 // the business. Outside it, Meta requires an approved template. Set WA_NOTIFY_TEMPLATE (a UTILITY template
 // with ONE body variable, the link, and fixed text after it; language WA_NOTIFY_TEMPLATE_LANG, default "he")
 // to enable that path. Without it, an out-of-window WhatsApp is marked SKIPPED, not retried forever.
@@ -30,33 +30,23 @@ const WA_PHONE_ID = Deno.env.get("WA_NOTIFY_PHONE_ID") ?? Deno.env.get("WHATSAPP
 const WA_TEMPLATE = Deno.env.get("WA_NOTIFY_TEMPLATE") ?? Deno.env.get("WHATSAPP_TEMPLATE_NEW_MATTER") ?? "";
 const WA_LANG = Deno.env.get("WA_NOTIFY_TEMPLATE_LANG") ?? Deno.env.get("WHATSAPP_TEMPLATE_LANG") ?? "he";
 
-const PRACTICE: Record<string, string> = { REAL_ESTATE: 'נדל"ן / תמ"א 38', COMMERCIAL_MA: "מסחרי / M&A", LABOR_LAW: "דיני עבודה", AI_GOVERNANCE: "ממשל AI", LITIGATION: "ליטיגציה" };
-const RISK: Record<string, string> = { HIGH_RISK: "סיכון גבוה", CAUTION: "זהירות", COMPLIANT: "תקין" };
-const CONFLICT: Record<string, string> = { CLEAN: "נקי", POTENTIAL: "דורש בדיקה ידנית", DIRECT_CONFLICT: "ניגוד ישיר" };
 
 interface Row { id: string; channel: string; matter_id: string; payload: Record<string, unknown>; attempts: number; recipient_email: string | null; recipient_phone: string | null; firm_name: string | null }
 type Outcome = { result: "SENT" | "SKIPPED" | "RETRY"; error?: string };
 
 const esc = (s: string): string => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-const pick = (map: Record<string, string>, v: unknown): string => (typeof v === "string" && map[v]) || "לא ידוע";
 
 function content(r: Row) {
-  const practice = pick(PRACTICE, r.payload.practice_area);
-  const risk = pick(RISK, r.payload.risk_level);
-  const conflict = pick(CONFLICT, r.payload.conflict_status);
   const link = `${SITE}/workspace?matter=${r.matter_id}`; // built from the row's own id, never from payload text
   const admin = r.channel === "ADMIN_COPY";
-  const subject = admin ? `עותק ביקורת: תיק חדש נקלט (${practice})` : `תיק חדש נקלט: ${practice}`;
-  const lines = [
-    admin ? "עותק ביקורת לניהול: נקלט תיק חדש." : "נקלט תיק חדש ומחכה לבדיקתך.",
-    `תחום: ${practice}`, `רמת סיכון: ${risk}`, `ניגוד עניינים: ${conflict}`,
-  ];
-  const text = `${lines.join("\n")}\n${link}\nההודעה אינה כוללת פרטים מזהים.`;
+  const subject = admin ? "עותק ביקורת: תיק חדש נקלט" : "תיק חדש ממתין לבדיקתך";
+  const lines = [admin ? "עותק ביקורת לניהול: נקלט תיק חדש." : "נקלט תיק חדש וממתין לבדיקתך."];
+  const text = `${lines.join("\n")}\n${link}\nההודעה אינה כוללת פרטי תיק. הכניסה דורשת התחברות.`;
   const html = `<div dir="rtl" style="font-family:Arial,sans-serif;line-height:1.7;color:#1a1815">` +
     lines.map((l) => `<p style="margin:0 0 6px">${esc(l)}</p>`).join("") +
     `<p><a href="${link}" style="background:#537056;color:#fff;padding:10px 18px;border-radius:20px;text-decoration:none">פתיחת התיק</a></p>` +
-    `<p style="color:#86807a;font-size:12px">ההודעה אינה כוללת פרטים מזהים. הכניסה דורשת התחברות.</p></div>`;
-  return { subject, text, html, practice, risk, link };
+    `<p style="color:#86807a;font-size:12px">ההודעה אינה כוללת פרטי תיק. הכניסה דורשת התחברות.</p></div>`;
+  return { subject, text, html, link };
 }
 
 async function sendEmail(to: string, c: ReturnType<typeof content>): Promise<Outcome> {
