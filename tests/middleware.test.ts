@@ -10,7 +10,7 @@ test('downstream handler only ever sees masked text; unauth and unknown routes n
   const db = new MemDb();
   let seen = '';
   const handle = withPipeline(
-    { agent: makeAgent(db), authenticate: async (r) => (r.headers.get('x-t') === 'ok' || true ? { firmId: 'F1', userId: 'u' } : null) },
+    { agent: makeAgent(db), authenticate: async () => ({ firmId: 'F1', userId: 'u' }) },
     async ({ result }) => { seen = result.maskedText; return new Response('ok'); },
   );
   const res = await call(handle, '/functions/v1/lalum-pipeline/api/v1/chat', { prompt: 'שלח ל-a@b.co' });

@@ -267,10 +267,16 @@ export class LalumAnonymizerProxy {
     return { masked, entities: detections.map(({ token, kind, start, end }) => ({ token, kind, start, end })), counts, needsReview, detections };
   }
 
-  /** Fail-closed egress guard: re-scan text about to leave the trusted zone. */
+  /** Fail-closed egress guard: re-scan text about to leave the trusted zone.
+   *  Mirrors detect(): same detectors (structured + dictionary + heuristic names) and the same
+   *  allowlist filter, so a name caught only by the Hebrew-title/anchor/org heuristic is re-verified
+   *  here too, not just structured PII and declared parties. */
   assertClean(text: string): void {
     const norm = normalizePunctuation(text);
-    const residual = resolveOverlaps([...detectStructured(norm), ...detectDictionary(norm, this.parties)]);
+    const residual = resolveOverlaps(
+      [...detectStructured(norm), ...detectDictionary(norm, this.parties), ...detectHeuristicNames(norm)]
+        .filter((d) => !(d.kind === 'CLIENT_NAME' && this.allow.has(normalizeName(d.value)))),
+    );
     if (residual.length) throw new PiiLeakError([...new Set(residual.map((d) => d.kind))]);
   }
 }
