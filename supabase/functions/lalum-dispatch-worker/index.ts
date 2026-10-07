@@ -41,7 +41,7 @@ function content(r: Row) {
   const practice = pick(PRACTICE, r.payload.practice_area);
   const risk = pick(RISK, r.payload.risk_level);
   const conflict = pick(CONFLICT, r.payload.conflict_status);
-  const link = `${SITE}/workspace/${r.matter_id}`; // built from the row's own id, never from payload text
+  const link = `${SITE}/workspace?matter=${r.matter_id}`; // built from the row's own id, never from payload text
   const admin = r.channel === "ADMIN_COPY";
   const subject = admin ? `עותק ביקורת: תיק חדש נקלט (${practice})` : `תיק חדש נקלט: ${practice}`;
   const lines = [
