@@ -37,7 +37,7 @@ Not legal advice. The attorney in charge approves every row before it is relied 
 1. Export of all matter documents on client request (s.90A(t)).
 2. MFA required for partners and admins.
 3. Breach notification runbook (the DPA draft has an open hours placeholder).
-4. Legal hold flag on a matter: blocks any purge.
+4. DONE: legal hold flag on a matter (blocks purge and any removal; see migration 20261007090110).
 5. Backup retention statement (point-in-time recovery window).
 6. Hebrew PII detection is rule based and imperfect: keep human review of masked text mandatory.
 7. Email carries practice area, risk and conflict status (Resend). Decide whether to make it generic like WhatsApp.
