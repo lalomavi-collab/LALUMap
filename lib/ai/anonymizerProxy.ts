@@ -85,7 +85,7 @@ export function detectStructured(text: string): Raw[] {
     push(out, { kind: 'ID_NUMBER', start: s, end: e, value: m[2], confidence: 0.95, role: 'UNKNOWN' });
   }
 
-  const numRe = /(?<![\w/]|\d[.,])(\d{2,8}-\d|\d{5,9})(?![\w/]|[.,]\d)/g;
+  const numRe = /(?<![\w/]|\d[.,])(\d{2,3}-\d{6,7}-\d|\d{2,8}-\d|\d{5,9})(?![\w/]|[.,]\d)/g;
   for (const m of text.matchAll(numRe)) {
     const raw = m[0];
     const digits = digitsOnly(raw);
@@ -100,6 +100,10 @@ export function detectStructured(text: string): Raw[] {
     else if (digits.length === 9 && valid) { kind = /^5[0-8]\d{7}$/.test(digits) ? 'COMPANY_REG' : 'ID_NUMBER'; confidence = 1; }
     if (kind) push(out, det(kind, m.index!, raw, confidence));
   }
+
+  // Street address: street word + name (1-3 words) + house number. The whole span is one ADDRESS token.
+  const addrRe = /(?<![\p{L}])(?:רחוב|רח['׳]|שדרות|שד['׳]|דרך|סמטת|כיכר)\s+(?:[\p{L}'׳"״-]+\s+){0,2}[\p{L}'׳"״-]+\s+\d{1,4}[א-ת]?(?![\d\w])/gu;
+  for (const m of text.matchAll(addrRe)) push(out, det('ADDRESS', m.index!, m[0], 0.9));
 
   // Land registry: only the numbers become tokens; the words גוש / חלקה stay readable.
   const combined = /(?:גוש\s*\/\s*חלקה|גו"ח)\s*:?\s*(\d{1,6})\s*\/\s*(\d{1,5})/gdu;
@@ -155,7 +159,7 @@ const TITLE_RE = new RegExp(
 );
 const EN_TITLE_RE = /\b(?:Mr|Mrs|Ms|Dr|Adv|Prof)\.?\s+([A-Z][a-z'-]+(?:\s+[A-Z][a-z'-]+)?)/gd;
 const STOP = new Set(
-  `על של את כי אשר הנ"ל הנ״ל טען טענה אמר אמרה הגיש הגישה חתם חתמה ציין ציינה השיב השיבה יליד ילידת ת"ז ת״ז מס' מס׳ בע"מ בע״מ וכן או גם לא כן היה היתה הודיע הודיעה מסר מסרה לפי בגין חברה חברת עמותה שותפות בעל בעלת הוא היא הינו הינה באמצעות ב"כ ב״כ ע"י ע״י מטעם בין לבין להלן ובין וכן מאת עם אל כנגד נגד מול מר גב' גב׳ גברת עו"ד עו״ד ד"ר ד״ר פרופ' רו"ח רו״ח שמאי אני שמי`.split(' '),
+  `על של את כי אשר הנ"ל הנ״ל טען טענה אמר אמרה הגיש הגישה חתם חתמה ציין ציינה השיב השיבה יליד ילידת ת"ז ת״ז מס' מס׳ בע"מ בע״מ וכן או גם לא כן היה היתה הודיע הודיעה מסר מסרה לפי בגין חברה חברת עמותה שותפות בעל בעלת הוא היא הינו הינה באמצעות ב"כ ב״כ ע"י ע״י מטעם בין לבין להלן ובין וכן מאת עם אל כנגד נגד מול מר גב' גב׳ גברת עו"ד עו״ד ד"ר ד״ר פרופ' רו"ח רו״ח שמאי אני שמי אינו אינה אינם אינן הינם הינן`.split(' '),
 );
 const HW = `[${HEB}][${HEB}'׳"״\\-]+`;
 const ANCHOR_ID_RE = new RegExp(String.raw`((?:${HW}\s+){0,2}${HW})\s*,?\s*(?=ת[.״"']?\s?ז)`, 'gdu');
