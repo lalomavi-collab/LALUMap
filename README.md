@@ -48,6 +48,36 @@ This sandbox's outbound network policy blocks `cdn.jsdelivr.net` and `*.supabase
 
 There's no build step here (framework-free static files), so nothing else catches a broken commit before it ships. `scripts/check.mjs` (pure Node, no dependencies) runs on every push/PR and checks: JS syntax, duplicate `id`s per page, forbidden em/en-dashes in real page content per the punctuation rule (never inside a comment), and that every `href` resolves — a same-page `#anchor` to an existing `id`, a `/path` to an existing file. All four are checks a manual audit found real, already-shipped violations from; this makes sure the next one doesn't ship silently. Run it locally with `node scripts/check.mjs`.
 
+## Cockpit: automated intake pipeline (new)
+
+A multi-tenant law-firm module living next to the PWA. User-facing walkthrough: `public/guide.html` (linked from the app header, a promo card on the first screen, and every cockpit page's nav).
+
+**What it does.** Every payload (uploaded text, intake webhook message, chat prompt) goes through `AutomatedPipelineAgent.process()` before anything can reach an LLM: (1) PII shield, (2) conflict check, (3) practice-area detection and playbook risk scoring, (4) hash-chained audit entry and dual dispatch. A RED conflict halts and returns one fixed neutral sentence. Export of a document is blocked until a 4-step human sign-off is valid for the exact current text (verified in Postgres by content hash, and re-checked by the export endpoint).
+
+| Piece | Where |
+|---|---|
+| Schema, RLS, RPCs (additive, all `lalum_*`; the old `public.matters` email-router table is untouched) | `supabase/migrations/` |
+| Pipeline agent, anonymizer, conflict engine, playbook engine, ephemeral vault, audit/routing | `lib/ai`, `lib/crypto`, `lib/services` |
+| Interception layer (Web Request/Response, framework-agnostic) | `middleware/pipelineMiddleware.ts` |
+| Edge function `lalum-pipeline` (`/api/v1/documents/{upload,draft,analyze,export}`, `/api/v1/intake/webhook`, `/api/v1/chat`) | `supabase/functions/lalum-pipeline/index.ts` |
+| UI: `/workspace/` (3-panel cockpit), `/admin/matters.html`, `/settings/billing.html`, `/guide.html`, `/legal/*` | `public/` |
+| Tests and strict typecheck | `tests/`, `npm test`, `npm run typecheck` |
+
+**Why not Next.js + Prisma as first specified.** This repo is a framework-free static PWA on a Supabase backend; a second app stack would have split the product. The schema is SQL migrations (Prisma enums became text + CHECK; Prisma's `@default(COMMERCIAL)` is not a value of its own enum, so `COMMERCIAL_MA` is the default). The lib code is erasable TypeScript so it runs on Deno, Node and tsc unchanged.
+
+**Deploy.** Migrations were applied to `lalum-app` through the Supabase MCP in small chunks (the tool times out on large ones, and on any chunk containing a DELETE statement; sign-off revocation therefore marks the row `REVOKED` instead of deleting), so the remote migration history has its own timestamps. The function imports from `lib/` and `middleware/`, so bundle before deploy: `npx esbuild supabase/functions/lalum-pipeline/index.ts --bundle --format=esm --platform=neutral --target=es2022 --external:npm:* --outfile=dist/index.js`, deploy with `verify_jwt: false` (the intake webhook has no user JWT; every route authenticates itself and fails closed).
+
+**Privacy design, precisely.** The original file and the token to value map are never stored: the map lives in a request-scoped AES-256-GCM vault destroyed at the end of the request; the browser keeps the original in memory for the session only (PII inspector, name restore on export). The database stores masked text, analysis and PII-free audit rows. Conflict parties are per-firm HMAC blind indexes, never names. The platform admin has no policy on `lalum_matter_documents`. This is not "no data retained": masked content is retained for the firm's work.
+
+**Known gaps (say so before relying on it).**
+- Partner e-mail / WhatsApp notifications are queued in `lalum_dispatch_outbox` (PII-free); no sender worker exists yet.
+- The Hebrew name detector is rules-based (titles, ID context, declared parties, "בע"מ"). It can miss undeclared names and over-masks some words before "ת.ז.". Declaring party names at intake is what makes conflict checks reliable.
+- `lalum_practice_playbooks` is seeded with 33 draft rules pending attorney review; statutes are cited without section numbers on purpose.
+- The existing `pii-gateway` function already has a stronger matter-scoped vault and LLM proxy (its source package `@lalum/pii-shield` is not in this repo). The cockpit anonymizer duplicates part of it; consolidate when that package is available. Cockpit chat forwards only masked text, through `pii-gateway`.
+- Legal pages are drafts. They cite Israel Bar ethics opinion 60/24, ABA Op. 512 and EU AI Act arts. 12 and 50 as instructed; none were verified against the sources. The DPA has 7 clauses (the brief named 6; the 7th, security / audit / breach notice, is an addition).
+- This sandbox cannot reach `*.supabase.co`, so the deployed function was not exercised over HTTP. Logic is covered by `tests/`; the SQL was exercised in rolled-back transactions (tenant isolation, role gates, sign-off, audit-chain verification). Run one real upload in a browser before relying on it.
+- Provisioning a firm: a platform admin calls `lalum_admin_create_firm(jsonb)` then `lalum_admin_add_member(firm, email, name, role)` (the person must have signed in once). No UI yet.
+
 ## Next steps
 
 - Wire ביקורת AI and מרכז ידע to real tables when there's a schema for them; they're still static/sample. Deliberately not attempted without a live decision from the operator: both would need new tables/RLS policies on `lalum-app`'s shared production database (the same project handling billing, calls, and an unrelated email-routing system), which isn't a change to make unattended.

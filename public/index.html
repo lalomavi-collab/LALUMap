@@ -35,6 +35,7 @@
           <a href="/security.html">אבטחה</a>
           <a href="/accessibility.html">נגישות</a>
           <a href="/cookies.html">עוגיות</a>
+          <a href="/guide.html">מדריך</a>
         </nav>
         <button type="button" id="header-avatar" class="avatar" hidden aria-label="התנתקות"></button>
       </div>
@@ -45,6 +46,15 @@
          "לקוח חדש" מבצע INSERT אמיתי, מוגן במדיניות admin_insert_contacts
          (זהה בעקרונה למדיניות הקריאה: lalum_is_admin() בלבד). -->
     <main class="screen active" id="screen-practice" aria-labelledby="screen-title">
+      <!-- פיצר חדש: קוקפיט תיקים. כפתורי כניסה ומדריך מוצגים תמיד בראש מסך הלקוחות. -->
+      <div class="card" id="cockpit-promo" style="gap:10px; background: var(--brand-tint); border-color: transparent;">
+        <div class="card-title">חדש: קוקפיט תיקים</div>
+        <div class="card-meta">קליטה אוטומטית של מסמכים עם הסתרת מידע מזהה, בדיקת ניגוד עניינים, ניתוח סיכונים ואישור אנושי לפני ייצוא.</div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <a class="btn-primary" href="/workspace/" style="display:inline-flex; align-items:center; justify-content:center; height:44px; padding:0 20px; font-size:14px;">פתיחת הקוקפיט</a>
+          <a href="/guide.html" style="display:inline-flex; align-items:center; justify-content:center; height:44px; padding:0 20px; border:1px solid var(--border-strong); border-radius:9999px; font-size:14px; background:var(--surface);">מדריך: איך זה עובד</a>
+        </div>
+      </div>
       <button class="btn-primary" type="button" id="new-client-toggle" aria-expanded="false" aria-controls="new-client-form-card">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14"/></svg>
         לקוח חדש
