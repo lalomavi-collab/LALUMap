@@ -1,0 +1,2 @@
+-- Runs the dispatch worker every minute. The worker key is read from lalum_private.worker_keys at run time (never stored in the job text).
+select cron.schedule('lalum-dispatch-worker', '* * * * *', $job$select net.http_post(url := 'https://meoymkcotomoluwlwues.supabase.co/functions/v1/lalum-dispatch-worker', headers := jsonb_build_object('Content-Type','application/json','x-lalum-worker',(select key from lalum_private.worker_keys where id = 1)), body := '{}'::jsonb, timeout_milliseconds := 20000)$job$);
