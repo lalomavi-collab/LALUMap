@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>מדריך לקוקפיט התיקים | LALUM</title>
+  <meta name="description" content="הסבר מלא על הקוקפיט של LALUM: מה הוא עושה, איך הנתונים מוגנים, ואיך עובדים בו צעד אחר צעד.">
+  <meta name="robots" content="noindex, follow">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Manrope:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/a11y.js"></script>
+  <style>
+    body { min-height: auto; }
+    .legal-wrap { max-width: 760px; margin: 0 auto; padding: 32px 22px 80px; }
+    .legal-wrap h1 { font-size: 26px; margin-bottom: 6px; }
+    .legal-wrap h2 { font-size: 17px; margin: 30px 0 10px; scroll-margin-top: 16px; }
+    .legal-wrap p, .legal-wrap li { font-size: 14.5px; line-height: 1.75; color: var(--text-secondary); }
+    .legal-wrap ul, .legal-wrap ol { margin: 0; padding-inline-start: 22px; display: flex; flex-direction: column; gap: 6px; }
+    .legal-wrap a { color: var(--brand-hover); text-decoration: underline; }
+    .back-link { display: inline-block; margin-bottom: 24px; font-size: 13px; color: var(--text-secondary); }
+    .toc { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 0; }
+    .toc a { border: 1px solid var(--border-strong); border-radius: 9999px; padding: 6px 14px; font-size: 13px; text-decoration: none; background: var(--surface); }
+    .step { display: flex; gap: 12px; align-items: flex-start; }
+    .step .n { flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%; background: var(--brand-hover); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
+    .cta { display: inline-block; background: var(--brand-hover); color: #fff !important; text-decoration: none !important; border-radius: 9999px; padding: 12px 22px; font-weight: 600; font-size: 14px; }
+    @media print { .back-link, .toc, .cta { display: none; } }
+  </style>
+</head>
+<body>
+  <div class="legal-wrap">
+    <a href="/" class="back-link">&#8592; חזרה לאפליקציה</a>
+    <h1 class="display">מדריך לקוקפיט התיקים</h1>
+    <p>מה זה, מה הוא עושה, ואיך מתחילים. אפשר להדפיס את העמוד כחוברת.</p>
+    <p><a class="cta" href="/workspace/">פתיחת הקוקפיט</a></p>
+    <nav class="toc" aria-label="תוכן העניינים"><a href="#what">מה זה</a><a href="#flow">מה קורה לכל מסמך</a><a href="#cockpit">שלוש החלוניות</a><a href="#signoff">אישור אנושי</a><a href="#admin">מסך הניהול</a><a href="#privacy">הגנת המידע</a><a href="#start">איך מתחילים</a><a href="#limits">מה עוד לא קיים</a></nav>
+
+    <h2 id="what">מה זה</h2>
+    <p>הקוקפיט הוא סביבת עבודה למשרד עורכי דין. מעלים חוזה, פנייה או הודעת לקוח, והמערכת מסתירה אוטומטית את הפרטים המזהים, בודקת ניגוד עניינים, מסווגת את התחום המשפטי, מסמנת סיכונים עם סעיפים חלופיים מוכנים, ומעבירה את התיק לשותף. שום מסמך לא יוצא מהמערכת בלי אישור אנושי מתועד.</p>
+    <p>המודל העסקי: מנוי קבוע למשרד. אין חלוקת שכר טרחה ואין אחוזים. הלקוח מתקשר ישירות עם המשרד, שנושא באחריות המקצועית המלאה.</p>
+
+    <h2 id="flow">מה קורה לכל מסמך: ארבעה שלבים אוטומטיים</h2>
+    <div class="card" style="gap:16px">
+      <div class="step"><span class="n">1</span><div><b>הסתרת מידע מזהה (PII Shield)</b><p>מספרי זהות, מספרי חברה, דוא"ל, טלפון, גוש וחלקה, חשבונות בנק ושמות הופכים לאסימונים כמו <code dir="ltr">[ID_NUMBER_1]</code> או <code dir="ltr">[CLIENT_NAME_2]</code>. הטבלה המקשרת מוצפנת בזיכרון (AES-256-GCM) ונמחקת בסוף הבקשה.</p></div></div>
+      <div class="step"><span class="n">2</span><div><b>בדיקת ניגוד עניינים</b><p>הצדדים נבדקים מול תיקי המשרד בלבד. 🟢 ירוק: נקי. 🟡 צהוב: דורש בדיקה ידנית. 🔴 אדום: ניגוד ישיר, והעיבוד נעצר מיד. הפונה מקבל משפט ניטרלי אחד בלבד, ללא שום פרט על הצד שכנגד.</p></div></div>
+      <div class="step"><span class="n">3</span><div><b>זיהוי תחום וניתוח סיכונים</b><p>המערכת מזהה אם מדובר בנדל"ן ותמ"א 38, מסחרי ו-M&amp;A, דיני עבודה, ממשל AI או ליטיגציה, ובודקת את הטקסט מול הפלייבוק של התחום. כל ממצא מסומן 🔴 סיכון גבוה, 🟡 זהירות או 🟢 תקין, עם הפניה לבסיס המשפטי וסעיף חלופי בלחיצה.</p></div></div>
+      <div class="step"><span class="n">4</span><div><b>תיעוד והעברה כפולה</b><p>נרשמת רשומת ביקורת בשרשרת קריפטוגרפית. התיק נפתח בקוקפיט, ונוצרת התראה לשותף ועותק ביקורת למנהל. ההתראות נכנסות לתור שליחה ללא פרטים מזהים.</p></div></div>
+    </div>
+
+    <h2 id="cockpit">שלוש החלוניות</h2>
+    <ul>
+      <li><b>כספת התיק (ימין):</b> המסמכים, העלאת מסמך נוסף, מפת הישויות שהוסתרו, ציר זמן, ותג <span class="pill pill-green">🔒 PII Masked &amp; Secured</span>.</li>
+      <li><b>עורך חכם (אמצע):</b> עריכת הטקסט, מעקב שינויים (Redline) מול הנוסח שנקלט, שחזור, והוספת סעיף חלופי בלחיצה. כל שמירה עוברת שוב הסתרת מידע.</li>
+      <li><b>אולפן הסוכנים (שמאל):</b> בחירת פלייבוק לפי תחום, מטריצת סיכון, אסמכתאות שלוחצים עליהן כדי לראות את הקטע בטקסט, ושער האישור האנושי.</li>
+      <li><b>בודק PII:</b> מגירה שמציגה אסימונים מול מקור. המקור זמין רק בדפדפן שבו הועלה המסמך ובסשן הנוכחי.</li>
+      <li>אפשר לגרור את הידיות בין החלוניות כדי לשנות רוחב. במסך צר החלוניות הופכות ללשוניות.</li>
+    </ul>
+
+    <h2 id="signoff">אישור אנושי לפני ייצוא</h2>
+    <p>ייצוא Word או PDF נפתח רק אחרי שמסומנים ארבעה שלבים על הנוסח הנוכחי: אימות עובדות, בדיקת אסמכתאות, סקירת שינויים ואישור שותף. את שלושת הראשונים יכול לסמן עורך דין או שותף, ואת הרביעי שותף בלבד. אם משנים את הטקסט, האישורים בטלים וצריך לסמן מחדש. הבדיקה מתבצעת בשרת, לא רק בכפתור.</p>
+
+    <h2 id="admin">מסך הניהול</h2>
+    <p>טבלת כל התיקים עם סינון לפי משרד, תחום וסטטוס תגובה. תיק שלא נצפה ולא טופל יותר משעתיים מסומן באדום וחורג מה-SLA, והמסך מתעדכן בזמן אמת. מתחתיו יומן ביקורת ניגוד עניינים ופעולה לאימות שרשרת הביקורת. מנהל הפלטפורמה רואה נתוני ניהול בלבד ולא את תוכן המסמכים. <a href="/admin/matters.html">למסך הניהול</a>.</p>
+
+    <h2 id="privacy">הגנת המידע בקצרה</h2>
+    <ul>
+      <li>המסמך המקורי והטבלה המקשרת לא נשמרים בשרת. נשמרת גרסה מוסתרת.</li>
+      <li>שום טקסט לא נשלח למודל שפה לפני שעבר הסתרה, ובדיקה חוזרת חוסמת כל דליפה שנותרה.</li>
+      <li>הפרדה מלאה בין משרדים ברמת מסד הנתונים.</li>
+      <li>הפרטים המלאים: <a href="/legal/dpa-terms.html">הסכם עיבוד המידע</a>, <a href="/legal/saas-terms.html">תנאי השימוש</a> ו<a href="/legal/client-disclosure.html">הצהרת הגילוי ללקוח</a>. חיוב ומסלולים: <a href="/settings/billing.html">הגדרות חיוב</a>.</li>
+    </ul>
+
+    <h2 id="start">איך מתחילים</h2>
+    <ol>
+      <li>מתחברים באימייל (לינק כניסה). החשבון צריך להיות משויך למשרד על ידי LALUM.</li>
+      <li>נכנסים ל<a href="/workspace/">קוקפיט התיקים</a> ולוחצים "תיק חדש".</li>
+      <li>ממלאים את שם הלקוח והצד שכנגד (מומלץ, כדי שבדיקת הניגוד תהיה מדויקת), מעלים קובץ DOCX, TXT או HTML או מדביקים טקסט.</li>
+      <li>עוברים על הממצאים האדומים והצהובים, מוסיפים סעיפים חלופיים, עורכים.</li>
+      <li>מסמנים את שלבי האישור ומייצאים.</li>
+    </ol>
+    <p><a class="cta" href="/workspace/">לקוקפיט</a></p>
+
+    <h2 id="limits">מה עוד לא קיים, בגלוי</h2>
+    <ul>
+      <li>התראות WhatsApp ודוא"ל לשותף נרשמות בתור שליחה, אך מנגנון השליחה עצמו טרם חובר.</li>
+      <li>קובצי PDF סרוקים אינם נתמכים כקלט. יש להעלות DOCX או TXT.</li>
+      <li>העורך הוא עורך טקסט פשוט עם מעקב שינויים, ללא עיצוב עשיר.</li>
+      <li>זיהוי שמות בעברית מבוסס כללים (תארים, הקשר, שמות שהוזנו מראש), ולכן מומלץ להזין את שמות הצדדים. זיהוי עלול גם להסתיר יתר על המידה.</li>
+      <li>כללי הפלייבוק הם טיוטה הממתינה לאישור עורך דין, ואינם תחליף לבדיקה מקצועית.</li>
+    </ul>
+  </div>
+</body>
+</html>

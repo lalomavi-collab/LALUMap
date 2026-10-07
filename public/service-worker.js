@@ -13,7 +13,7 @@
 // index.html's own <head> actually links (apple-touch-icon + both
 // favicons) — v2 cached every CSS/JS the shell needs but still missed
 // these, so a fully offline launch still had to hit the network for them.
-const CACHE_NAME = 'lalum-shell-v3';
+const CACHE_NAME = 'lalum-shell-v4';
 const APP_SHELL = [
   '/',
   '/index.html',

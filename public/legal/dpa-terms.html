@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>הסכם עיבוד מידע (DPA) | LALUM</title>
+  <meta name="description" content="הסכם עיבוד המידע של LALUMapp: שבעה סעיפי פרטיות מרכזיים, ביניהם אי שמירת מידע, עיבוד זמני, אי אימון והגנה על חיסיון.">
+  <meta name="robots" content="noindex, follow">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Manrope:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/a11y.js"></script>
+  <style>
+    body { min-height: auto; }
+    .legal-wrap { max-width: 760px; margin: 0 auto; padding: 32px 22px 80px; }
+    .legal-wrap h1 { font-size: 26px; margin-bottom: 6px; }
+    .legal-wrap h2 { font-size: 17px; margin: 30px 0 10px; scroll-margin-top: 16px; }
+    .legal-wrap p, .legal-wrap li { font-size: 14.5px; line-height: 1.75; color: var(--text-secondary); }
+    .legal-wrap ul, .legal-wrap ol { margin: 0; padding-inline-start: 22px; display: flex; flex-direction: column; gap: 6px; }
+    .legal-wrap a { color: var(--brand-hover); text-decoration: underline; }
+    .back-link { display: inline-block; margin-bottom: 24px; font-size: 13px; color: var(--text-secondary); }
+    .toc { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 0; }
+    .toc a { border: 1px solid var(--border-strong); border-radius: 9999px; padding: 6px 14px; font-size: 13px; text-decoration: none; background: var(--surface); }
+    .step { display: flex; gap: 12px; align-items: flex-start; }
+    .step .n { flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%; background: var(--brand-hover); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
+    .cta { display: inline-block; background: var(--brand-hover); color: #fff !important; text-decoration: none !important; border-radius: 9999px; padding: 12px 22px; font-weight: 600; font-size: 14px; }
+    @media print { .back-link, .toc, .cta { display: none; } }
+  </style>
+</head>
+<body>
+  <div class="legal-wrap">
+    <a href="/" class="back-link">&#8592; חזרה לאפליקציה</a>
+    <h1 class="display">הסכם עיבוד מידע (DPA)</h1>
+    <p>עודכן לאחרונה: 7.10.2026</p>
+    <div class="card" style="background: var(--amber-bg); border-color: transparent; margin-top: 18px;">
+      <p style="color: var(--amber-text); font-weight: 600; margin: 0;">
+        טיוטה הממתינה לאישור עורך דין. המסמך מתאר את אופן הפעולה של המערכת כפי שהיא ממומשת היום, אך טרם עבר ביקורת משפטית פורמלית של ד״ר עו״ד אברהם ללום. אין להסתמך עליו כמסמך סופי עד לאישורו. סעיפים המסומנים בסוגריים מרובעים דורשים השלמה או אימות.
+      </p>
+    </div>
+
+    <p>הסכם זה מסדיר את עיבוד המידע על ידי LALUM (להלן: "המעבד") עבור המשרד (להלן: "בעל השליטה") במסגרת השימוש בפלטפורמה. הוא חלק בלתי נפרד מ<a href="/legal/saas-terms.html">תנאי השימוש</a>.</p>
+    <nav class="toc" aria-label="סעיפי ההסכם"><a href="#c1">1. אי שמירה</a><a href="#c2">2. עיבוד זמני</a><a href="#c3">3. אי אימון</a><a href="#c4">4. ללא עיון אנושי</a><a href="#c5">5. הפרדה בין משרדים</a><a href="#c6">6. הגנה על חיסיון</a><a href="#c7">7. אבטחה ותיעוד</a></nav>
+
+    <h2 id="c1">1. Zero Data Retention: אי שמירת מידע מזהה</h2>
+    <p>המעבד אינו שומר את המסמך המקורי ואינו שומר את הטבלה המקשרת בין אסימונים לפרטים המזהים. מה שנשמר בפלטפורמה הוא גרסה מוסתרת של המסמך, תוצאות הניתוח שלה ורשומות ביקורת ללא פרטים מזהים, והוא נשמר לצורך עבודת המשרד בתיק ובשליטתו. [לאמת מול הסכם הספקים: מדיניות שמירה אצל ספק מודל השפה]</p>
+
+    <h2 id="c2">2. Ephemeral Processing: עיבוד זמני</h2>
+    <p>פרטים מזהים מוחלפים באסימונים בתוך בקשת העיבוד עצמה. הטבלה המקשרת מוצפנת בהצפנת AES-256-GCM בזיכרון עם מפתח שנוצר לאותה בקשה בלבד, אינה נכתבת לדיסק או ליומנים, ומושמדת בסיום הבקשה. כל מידע שעומד לצאת לגורם חיצוני נסרק פעם נוספת, ואם נותר בו מידע מזהה הבקשה נחסמת ולא נשלחת.</p>
+
+    <h2 id="c3">3. Absolute Non-Training: איסור אימון מוחלט</h2>
+    <p>המעבד לא ישתמש במידע בעל השליטה, בקלט או בפלט, לאימון, כוונון או שיפור מודלים, שלו או של צד שלישי, ולא יתיר זאת לספקי משנה. [לוודא התחייבות מקבילה בהסכם עם כל ספק משנה]</p>
+
+    <h2 id="c4">4. No Human Review: אי עיון אנושי</h2>
+    <p>עובדי המעבד אינם צופים בתוכן התיקים. מנהל הפלטפורמה רואה נתוני ניהול בלבד: משרד, תחום, סטטוס, מועדים, תוצאת בדיקת ניגוד עניינים וחריגות SLA, ואין לו הרשאת קריאה למסמכי התיק, והדבר נאכף ברמת מסד הנתונים. חריגים: הוראה מפורשת ובכתב של בעל השליטה, או חובה על פי דין, ובכפוף להודעה מראש ככל שהדין מתיר.</p>
+
+    <h2 id="c5">5. Multi-Tenant Isolation: הפרדה בין משרדים</h2>
+    <p>נתוני כל משרד מופרדים מנתוני משרדים אחרים ברמת מסד הנתונים (Row Level Security). בדיקת ניגוד עניינים נעשית מול תיקי אותו משרד בלבד, ואינה חושפת לעולם מידע על משרד אחר. שמות וצדדים אינם נשמרים בטקסט גלוי ברישום ניגוד העניינים, אלא כמזהים מוצפנים בלתי הפיכים, עם מפתח נפרד לכל משרד.</p>
+
+    <h2 id="c6">6. Legal Privilege Protection: הגנה על חיסיון עורך דין לקוח</h2>
+    <p>המעבד פועל כזרוע טכנית של בעל השליטה ואינו מקבל זכות עצמאית במידע. במקרה של דרישה לגילוי מידע מצד רשות או צד שלישי, המעבד יודיע לבעל השליטה בהקדם ככל שהדין מתיר, יעמוד על כך שבעל השליטה יוכל לטעון לחיסיון, ולא ימסור מידע בטרם מוצו הליכי ההגנה.</p>
+
+    <h2 id="c7">7. אבטחה, תיעוד והודעה על אירוע</h2>
+    <ul>
+      <li>כל פעולה מהותית נרשמת ביומן ביקורת בשרשרת קריפטוגרפית (כל רשומה כוללת חתימת גיבוב של קודמתה), שאינו ניתן לעדכון או מחיקה, וניתן לאימות מתוך המערכת. היומן אינו מכיל פרטים מזהים. הדבר תומך בדרישות הרישום של סעיף 12 ל-EU AI Act.</li>
+      <li>המעבד יודיע לבעל השליטה על אירוע אבטחה שחשף מידע, ללא שהיות מיותרת וככל האפשר בתוך [__] שעות מגילויו.</li>
+      <li>ספקי משנה: [רשימה לעדכון: תשתית ענן ומסד נתונים, ספק מודל שפה]. שינוי ספק משנה יימסר מראש.</li>
+    </ul>
+
+    <h2>סיום ומחיקה</h2>
+    <p>עם סיום ההתקשרות יוחזרו נתוני בעל השליטה לבקשתו וימחקו בתוך [__] ימים, למעט מה שחובה לשמור על פי דין.</p>
+  </div>
+</body>
+</html>

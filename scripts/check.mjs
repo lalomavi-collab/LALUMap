@@ -19,8 +19,16 @@ function fail(message) {
   failures++;
 }
 
-const htmlFiles = readdirSync(PUBLIC_DIR).filter((f) => f.endsWith(".html"));
-const jsFiles = readdirSync(PUBLIC_DIR).filter((f) => f.endsWith(".js"));
+// Recursive: public/ now has subfolders (workspace/, admin/, settings/, legal/). Paths are
+// relative to public/ with forward slashes.
+function walk(dir, rel = "") {
+  return readdirSync(path.join(dir, rel), { withFileTypes: true }).flatMap((e) =>
+    e.isDirectory() ? walk(dir, path.posix.join(rel, e.name)) : [path.posix.join(rel, e.name)],
+  );
+}
+const allFiles = walk(PUBLIC_DIR);
+const htmlFiles = allFiles.filter((f) => f.endsWith(".html"));
+const jsFiles = allFiles.filter((f) => f.endsWith(".js"));
 
 // 1. JS syntax
 for (const f of jsFiles) {
@@ -98,8 +106,9 @@ for (const f of htmlFiles) {
       continue;
     }
     if (href.startsWith("/")) {
-      const rel = href.split("#")[0].replace(/^\//, "");
-      const target = rel === "" ? "index.html" : rel;
+      let rel = href.split("#")[0].split("?")[0].replace(/^\//, "");
+      if (rel === "" || rel.endsWith("/")) rel += "index.html";
+      const target = rel;
       if (!existsSync(path.join(PUBLIC_DIR, target))) fail(`${f}: href="${href}" -> public/${target} does not exist`);
     }
   }
