@@ -18,7 +18,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const SITE = "https://lalumapp.com";
 const sb: any = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
-const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
+// RESEND_API_KEY1 is the key scoped to lalumapp.com; falls back to the shared RESEND_API_KEY.
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY1") ?? Deno.env.get("RESEND_API_KEY") ?? "";
 const FROM = Deno.env.get("LALUM_FROM_EMAIL") ?? "LALUM <no-reply@lalumapp.com>";
 const NOTIFY_TO = Deno.env.get("LALUM_NOTIFY_TO") ?? "avraham@lalum.co";
 const WA_TOKEN = Deno.env.get("WHATSAPP_TOKEN") ?? "";
