@@ -14,13 +14,14 @@ Decisions taken (owner, 2026-10-08):
 
 ## 2. Storage
 - `lalum_matter_inquiries(id, firm_id, matter_id null, channel, received_at timestamptz default now(), body_masked, attachment_count, status[NEW|SEEN|HANDLED], handled_by, handled_at)`.
-- Body goes through the PII gateway first; only the masked text is stored. Open decision: whether the raw text may be retained at all (current promise to users: the source is not stored). Default here: not retained.
-- Attachments are stored as matter documents (anonymized, same as intake) and counted on the inquiry.
+- Decision (owner, attorney and partner, 2026-10-08): the full inquiry is kept in the matter, raw text included, to make handling efficient and keep everything in the file. Columns: `body_raw` (encrypted at rest with a per-firm key, readable only through an audited RPC) and `body_masked` (what the AI features see; nothing raw ever reaches the gateway or a provider).
+- Consequences to close before go-live: the intake notice that says the source is not stored must change; DPA, privacy notice and the security level under Privacy Protection Regulations (Information Security) must reflect raw retention; retention and legal hold apply to inquiries as matter material; no raw text in logs or in the generic notices.
+- Attachments are stored as matter documents and counted on the inquiry. Files from unidentified senders are accepted too (decision 2026-10-08), but only after a malware scan: quarantine bucket first, scan, then release to the matter or the unassigned inbox; an infected or unscannable file is rejected and an `INQUIRY_FILE_REJECTED` audit entry is written (count and reason only).
 - RLS: firm members of the same firm only; user-scoped clients; service role only inside the ingest functions.
 
 ## 3. Audit (hash chain, existing `lalum_append_audit`)
 New actions, each with server `now()`, actor, matter, and counts only (no names, no addresses):
-`INQUIRY_RECEIVED`, `INQUIRY_ROUTED`, `INQUIRY_UNMATCHED`, `INQUIRY_SEEN`, `INQUIRY_HANDLED`, `DOC_SAVED`, `DOC_VIEWED`, `DOC_EDITED`, `DOC_EXPORTED`.
+`INQUIRY_RECEIVED`, `INQUIRY_ROUTED`, `INQUIRY_UNMATCHED`, `INQUIRY_SEEN`, `INQUIRY_HANDLED`, `INQUIRY_FILE_REJECTED`, `DOC_SAVED`, `DOC_VIEWED`, `DOC_EDITED`, `DOC_EXPORTED`.
 - `DOC_VIEWED` and `DOC_SAVED` are written by RPCs the cockpit must call on open and save (a SELECT cannot be audited by a trigger). Reads through other paths are not covered; say so in the UI.
 
 ## 4. Alert
@@ -40,6 +41,7 @@ New actions, each with server `now()`, actor, matter, and counts only (no names,
 4. Unassigned inbox rules (open a matter only on substantive content or files).
 
 ## Risks to settle before phase 1
-- Raw inquiry text retention vs. the "source not stored" promise.
+- Raw retention is decided (see section 2); what remains is the legal text and security level.
+- Choose the scanner (ClamAV in a container vs. a scanning API); an API means client files leave our infrastructure and needs the same sub-processor review as any provider.
 - Ethics and privacy: a client contacting an address that matches two matters; attachments from unknown senders (malware scanning before storage).
 - Legal hold and retention clocks must apply to inquiries as matter material.
