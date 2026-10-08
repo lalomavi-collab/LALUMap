@@ -41,3 +41,13 @@ Not legal advice. The attorney in charge approves every row before it is relied 
 5. Backup retention statement (point-in-time recovery window).
 6. Hebrew PII detection is rule based and imperfect: keep human review of masked text mandatory.
 7. Email carries practice area, risk and conflict status (Resend). Decide whether to make it generic like WhatsApp.
+
+## 6. Original files (added 2026-10-08)
+
+| Requirement | Application | Status |
+|---|---|---|
+| Archival material is the file, not only a masked text (s.90A) | Private bucket `matter-originals`, path `firm/matter/document/file`, write once (no UPDATE or DELETE policy), SHA-256 per original recorded in the audit chain (`ORIGINAL_STORED`) | DONE (storage and audit); platform encryption at rest only, not end-to-end |
+| Destruction after client consent (s.90A(c), ethics policy 2.003) | `lalum_purge_expired` skips any matter that holds originals, because Storage objects cannot be removed from SQL | GAP: needs a Storage deletion path (edge function with service role, audited) before the 30 day purge can cover originals |
+| Legal hold | Documents are guarded by trigger; originals cannot be deleted from the app at all | DONE; service role could still delete, so keep that key out of request paths |
+| Client may ask for the material (s.90A(t)) | The ZIP export does not include originals yet | GAP |
+| Privacy notices say the source is not stored | Intake notice, DPA, privacy notice, client disclosure | TO UPDATE before use with real files |
