@@ -1,0 +1,10 @@
+-- Rollback test for lalum_recycle_bin (always ends with RAISE; nothing persists, the audit log is append only).
+-- Replace f (a firm), u (its FIRM_PARTNER user with MFA ok). Expected: "ALLPASS: doc trash hide restore ok | doc purge flow ok | ...".
+-- Storage objects cannot be removed by SQL (trigger storage.protect_delete), so the test lifts that guard with
+-- storage.allow_delete_query to stand in for the Storage API call; the DELETE policy itself is exercised through
+-- lalum_original_purge_allowed (true only for objects flagged by a purge request, and only for a partner of the firm).
+-- It also covers the case a non member must never pass: lalum_is_partner_of must return false, not null, for an unknown user.
+-- See the full script in the pull request description for the body; it covers: trash and restore of a document and a matter,
+-- visibility (trashed rows vanish from normal selects, appear in lalum_bin_list), purge needs the typed confirmation, finishing
+-- before the object is removed fails, restoring after a purge request fails, purged matter becomes a tombstone ('תיק שנמחק'),
+-- retention period and legal hold block permanent deletion, and a non partner is refused by every function.
