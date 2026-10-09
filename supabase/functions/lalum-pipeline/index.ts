@@ -165,7 +165,14 @@ async function exportRoute(req: Request): Promise<Response> {
   return json(req, 200, { ok: true, file_name: doc.file_name, content: doc.editor_content });
 }
 
+// Static synthetic probe: proves the deployed masking code behaves like the repository's (no caller input, no data).
+const PROBE = 'מר דוד כהן, ת.ז. 123456782, טלפון 052-123-4567, דוא"ל test.person@example.test, ברחוב הרצל 15, חשבון בנק 12-345-678901';
+
 Deno.serve(async (req: Request) => {
+  if (req.method === 'GET' && new URL(req.url).pathname.endsWith('/selftest')) {
+    const v = await EphemeralVault.create();
+    try { return new Response(JSON.stringify({ masked: (await new LalumAnonymizerProxy({ vault: v }).anonymize(PROBE)).masked }), { headers: { 'content-type': 'application/json; charset=utf-8' } }); } finally { v.dispose(); }
+  }
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: corsFor(req) });
   const path = new URL(req.url).pathname;
   try {
