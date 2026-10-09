@@ -27,7 +27,7 @@ async function fetchEmail(id: string): Promise<any | null> {
 }
 
 // Static synthetic probe: proves the deployed masking code behaves like the repository's (no input from the caller, no data).
-const PROBE = 'מר דוד כהן, ת.ז. 123456782, טלפון 052-123-4567, דוא"ל test.person@example.test, רחוב הרצל 15, חשבון בנק 12-345-678901';
+const PROBE = 'מר דוד כהן, ת.ז. 123456782, טלפון 052-123-4567, דוא"ל test.person@example.test, ברחוב הרצל 15, חשבון בנק 12-345-678901';
 
 Deno.serve(async (req: Request) => {
   if (req.method === 'GET' && new URL(req.url).pathname.endsWith('/selftest')) {

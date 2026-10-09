@@ -77,3 +77,13 @@ test('vault seals values and wipes on dispose', async () => {
   assert.equal(v.disposed, true);
   await assert.rejects(() => v.reveal(t));
 });
+
+test('prefixed street words are masked, the prefix letter stays readable; look-alikes are not', async () => {
+  const vault = await EphemeralVault.create();
+  const p = new LalumAnonymizerProxy({ vault, parties: [] });
+  const a = (await p.anonymize('הדירה ברחוב הרצל 15 ולשדרות רוטשילד 22.')).masked;
+  assert.ok(!a.includes('הרצל') && !a.includes('רוטשילד'), a);
+  assert.match(a, /ב\[ADDRESS_\d+\]/); // prefix outside the span
+  const b = (await new LalumAnonymizerProxy({ vault: await EphemeralVault.create(), parties: [] }).anonymize('לפי סעיף 12 ובדרך כלל עד 15 ימים, שטח 80 מ"ר.')).masked;
+  assert.ok(!b.includes('ADDRESS'), b);
+});
