@@ -31,3 +31,7 @@ begin
   if n <> 1 then raise exception 'FAIL 8 audit %', n; end if; res := array_append(res, 'audit ORIGINAL_STORED ok');
   raise exception 'ALLPASS: %', array_to_string(res, ' | ');
 end $$;
+
+-- Linkage rules (migration 20261009090170): run as a second block with the same f, m, u. Expected "ALLPASS: unlinked uploads refused ok | slot rules ok".
+-- do $$ ... an object whose document does not exist, whose matter is wrong, or whose name is not original.<ext> is refused;
+-- the right slot is accepted once; after attach a second original for the same document is refused. (See PR description for the script.)
