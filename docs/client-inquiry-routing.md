@@ -45,3 +45,13 @@ New actions, each with server `now()`, actor, matter, and counts only (no names,
 - Choose the scanner (ClamAV in a container vs. a scanning API); an API means client files leave our infrastructure and needs the same sub-processor review as any provider.
 - Ethics and privacy: a client contacting an address that matches two matters; attachments from unknown senders (malware scanning before storage).
 - Legal hold and retention clocks must apply to inquiries as matter material.
+
+## 7. E-mail channel (built)
+- Function `lalum-inquiry-email` (verify_jwt off, Svix signature is the credential, fails closed without `RESEND_INBOUND_WEBHOOK_SECRET`). Resend webhook `email.received` -> `https://<project>.supabase.co/functions/v1/lalum-inquiry-email`.
+- Routing: each firm has `lalum_firms.inquiry_alias`; the receiving address is `inq-<alias>@lalumapp.com` (shown to members by `lalum_my_inquiry_address()`). Unknown alias is dropped silently (no oracle).
+- Idempotency: `lalum_inbound_claim` per message id; released on failure so the provider retries.
+- Filters: bounces, auto-replies and bulk mail never become inquiries. Rate limit 200 per firm per hour.
+- Text: subject + body, masked with the same anonymizer as the pipeline; raw is encrypted by `lalum_ingest_inquiry`. Masked text that still fails `assertClean` is replaced by a notice.
+- Attachments are NOT stored until the scanner exists: the count and a notice are kept. Open: ClamAV phase.
+- Processor note: Resend stores and processes inbound mail in its own region (the lalumapp.com domain is in ap-northeast-1). Disclose in the privacy text and sub-processor list before relying on it for client mail.
+- `GET .../selftest` masks a fixed synthetic string, to prove the deployed masking code matches the repository.
