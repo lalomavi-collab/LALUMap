@@ -3,6 +3,7 @@
 -- Local:  psql -v ON_ERROR_STOP=1 -f supabase/tests/live_model/replica.sql   (on a scratch DB with the repo migrations)
 --         psql -v ON_ERROR_STOP=1 -f supabase/tests/live_model/security.sql
 -- Branch: run security.sql alone against a Supabase branch of the live project (it needs no replica there).
+--         Success = the final row 'OK: 20 checks passed'. Any error means a check failed: run `rollback;` in a new query before anything else.
 begin;
 create function public.tt_as_user(u uuid) returns void language plpgsql as $$
 begin
@@ -199,3 +200,5 @@ begin
   raise notice 'PASS: attorneys cannot apply trust funds to an invoice';
 end $$;
 rollback;
+-- Visible in the Supabase SQL editor (which does not show RAISE NOTICE): if every check above passed you get this row.
+select 'OK: 20 checks passed, nothing was kept (transaction rolled back)' as result;
