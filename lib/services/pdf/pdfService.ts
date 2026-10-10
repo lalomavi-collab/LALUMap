@@ -8,7 +8,7 @@ export interface PdfDeps {
 }
 export interface PdfReply { status: number; headers: Record<string, string>; body: Uint8Array | string }
 
-const FORWARD = ['kind', 'id', 'client', 'court_case', 'bank'] as const;
+const FORWARD = ['kind', 'id', 'court_case', 'attorney', 'bank'] as const;
 const json = (status: number, code: string): PdfReply => ({ status, headers: { 'content-type': 'application/json' }, body: JSON.stringify({ code }) });
 const SAFE = /^[0-9a-f-]{1,40}$/i;
 

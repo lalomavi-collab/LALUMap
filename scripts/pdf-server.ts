@@ -1,5 +1,5 @@
 // Minimal Node host for PDF downloads. Env: SUPABASE_URL, SUPABASE_ANON_KEY, PORT (default 8787).
-// GET /pdf?kind=bill|trust&id=<uuid or ledger id>[&client=..&court_case=..&bank=..]   Authorization: Bearer <user JWT>
+// GET /pdf?kind=bill|trust&id=<fin document uuid or trust ledger id>[&court_case=..&attorney=..&bank=..]   Authorization: Bearer <user JWT>
 import { createServer } from 'node:http';
 import { handlePdfRequest } from '../lib/services/pdf/pdfService.ts';
 import { htmlToPdf } from '../lib/services/pdf/render.ts';

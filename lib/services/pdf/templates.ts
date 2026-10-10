@@ -5,14 +5,15 @@
 import { LALUM_LOGO_SVG } from './logo.ts';
 
 export interface FirmInfo { name: string; registrationNo: string; email: string; phone: string }
-export interface TimeLine { date: string; description: string; lawyer: string; minutes: number; rate: number; amount: number }
-export interface DisbLine { date: string; kind: 'COURT_FEE' | 'COURIER' | 'EXPERT' | 'OTHER'; description: string; amount: number }
+/** One line of lalum_fin_documents.lines (services and expenses are mixed in one array by the finance engine). */
+export interface Line { name: string; qty: number; price: number }
 export interface PreBillData {
-  firm: FirmInfo; billNo: string; issuedOn: string;
-  matterTitle: string; clientName: string; courtCaseNo?: string; handlingAttorney: string;
-  time: TimeLine[]; disbursements: DisbLine[];
-  vatRate: number; trustApplied: number;
-  taxDocRef?: string; allocationNumber?: string;
+  firm: FirmInfo; docRef: string; issuedOn: string; dueOn?: string; subject?: string;
+  customer: { name: string; taxId?: string; address?: string };
+  matterTitle?: string; courtCaseNo?: string; handlingAttorney?: string;
+  lines: Line[]; taxIncluded: boolean; vatRatePct: number;   // vat_rate is stored as a percent (18), not a fraction
+  trustApplied: number;                                       // sum of EARNED_FEE_TRANSFER for this document
+  taxDocRef?: string; allocationNumber?: string;              // only when Invoice4U issued the legal tax invoice
   bankInstructions?: string;
 }
 export interface TrustReceiptData {
@@ -26,17 +27,15 @@ const num = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFr
 /** Deterministic, bidi-safe amount: sign and shekel sign stay on the left of the digits in an LTR cell. */
 export const money = (n: number): string => `₪${num.format(n)}`;
 const r2 = (n: number): number => Math.round((n + Number.EPSILON) * 100) / 100;
-const hours = (min: number): string => `${Math.floor(min / 60)}:${String(min % 60).padStart(2, '0')}`;
-const KIND: Record<DisbLine['kind'], string> = { COURT_FEE: 'אגרת בית משפט', COURIER: 'שליחות', EXPERT: 'שכר מומחה', OTHER: 'אחר' };
 
-/** Same arithmetic as lalum_bill_finalize: VAT on (services + disbursements), rounded to agorot. */
-export function preBillTotals(d: Pick<PreBillData, 'time' | 'disbursements' | 'vatRate' | 'trustApplied'>) {
-  const services = r2(d.time.reduce((a, t) => a + t.amount, 0));
-  const disb = r2(d.disbursements.reduce((a, t) => a + t.amount, 0));
-  const vat = r2((services + disb) * d.vatRate);
-  const gross = r2(services + disb + vat);
-  if (d.trustApplied < 0 || d.trustApplied > gross) throw new Error('trust offset exceeds bill total');
-  return { services, disb, vat, gross, balanceDue: r2(gross - d.trustApplied) };
+/** Same arithmetic as lalum_fin_totals / computeTotals in lalum-app: sum the lines first, round once. */
+export function preBillTotals(d: Pick<PreBillData, 'lines' | 'taxIncluded' | 'vatRatePct' | 'trustApplied'>) {
+  const sum = d.lines.reduce((a, l) => a + l.qty * l.price, 0);
+  let subtotal: number, vat: number, total: number;
+  if (d.taxIncluded) { total = r2(sum); subtotal = r2(sum / (1 + d.vatRatePct / 100)); vat = r2(total - subtotal); }
+  else { subtotal = r2(sum); vat = r2((subtotal * d.vatRatePct) / 100); total = r2(subtotal + vat); }
+  if (d.trustApplied < 0 || d.trustApplied > total) throw new Error('trust offset exceeds document total');
+  return { subtotal, vat, total, balanceDue: r2(total - d.trustApplied) };
 }
 
 const CSS = `
@@ -68,31 +67,29 @@ function shell(title: string, firm: FirmInfo, body: string): string {
 
 export function preBillHtml(d: PreBillData): string {
   const t = preBillTotals(d);
-  const timeRows = d.time.map((l) => `<tr><td>${esc(l.date)}</td><td>${esc(l.description)}</td><td>${esc(l.lawyer)}</td><td class="n">${hours(l.minutes)}</td><td class="n">${money(l.rate)}</td><td class="n">${money(l.amount)}</td></tr>`).join('');
-  const disbRows = d.disbursements.map((l) => `<tr><td>${esc(l.date)}</td><td>${KIND[l.kind]}</td><td>${esc(l.description)}</td><td class="n">${money(l.amount)}</td></tr>`).join('');
+  const rows = d.lines.map((l) => `<tr><td>${esc(l.name)}</td><td class="n">${l.qty}</td><td class="n">${money(l.price)}</td><td class="n">${money(r2(l.qty * l.price))}</td></tr>`).join('');
   const taxLine = d.taxDocRef
     ? `חשבונית מס מספר <span class="ltr">${esc(d.taxDocRef)}</span>${d.allocationNumber ? ` · מספר הקצאה: <span class="ltr">${esc(d.allocationNumber)}</span>` : ''}`
     : 'חשבונית המס תונפק בנפרד ותישא מספר הקצאה מרשות המסים (חשבוניות ישראל).';
   const body = `
 <h1>חשבון עסקה</h1><div class="banner">מסמך זה אינו חשבונית מס</div>
-<div class="box">מספר: <b class="ltr">${esc(d.billNo)}</b> · תאריך: ${esc(d.issuedOn)}<br>${taxLine}</div>
-<h2>פרטי התיק</h2>
-<div class="box">תיק: <b>${esc(d.matterTitle)}</b><br>לקוח: ${esc(d.clientName)}<br>מספר תיק בית משפט: ${d.courtCaseNo ? `<span class="ltr">${esc(d.courtCaseNo)}</span>` : 'לא רלוונטי'}<br>עורך דין מטפל: ${esc(d.handlingAttorney)}</div>
-<h2>שירותים משפטיים</h2>
-<table><tr><th>תאריך</th><th>תיאור</th><th>עורך דין</th><th class="n">משך</th><th class="n">תעריף לשעה</th><th class="n">סכום</th></tr>${timeRows || '<tr><td colspan="6">אין</td></tr>'}</table>
-<h2>החזר הוצאות</h2>
-<table><tr><th>תאריך</th><th>סוג</th><th>תיאור</th><th class="n">סכום</th></tr>${disbRows || '<tr><td colspan="4">אין</td></tr>'}</table>
+<div class="box">מספר: <b class="ltr">${esc(d.docRef)}</b> · תאריך: ${esc(d.issuedOn)}${d.dueOn ? ` · לתשלום עד: ${esc(d.dueOn)}` : ''}<br>${taxLine}</div>
+<h2>פרטי הלקוח והתיק</h2>
+<div class="box">לקוח: <b>${esc(d.customer.name)}</b>${d.customer.taxId ? ` · ת״ז / ח״פ: <span class="ltr">${esc(d.customer.taxId)}</span>` : ''}${d.customer.address ? `<br>${esc(d.customer.address)}` : ''}
+${d.matterTitle ? `<br>תיק: <b>${esc(d.matterTitle)}</b>` : ''}${d.subject ? `<br>נושא: ${esc(d.subject)}` : ''}
+${d.courtCaseNo ? `<br>מספר תיק בית משפט: <span class="ltr">${esc(d.courtCaseNo)}</span>` : ''}${d.handlingAttorney ? `<br>עורך דין מטפל: ${esc(d.handlingAttorney)}` : ''}</div>
+<h2>פירוט שירותים והוצאות</h2>
+<table><tr><th>תיאור</th><th class="n">כמות</th><th class="n">מחיר ליחידה</th><th class="n">סכום</th></tr>${rows || '<tr><td colspan="4">אין</td></tr>'}</table>
 <h2>סיכום כספי</h2>
 <table class="sum">
-<tr><td>סה״כ שכר טרחה</td><td class="n">${money(t.services)}</td></tr>
-<tr><td>סה״כ הוצאות</td><td class="n">${money(t.disb)}</td></tr>
-<tr><td>מע״מ (${(d.vatRate * 100).toFixed(0)}%)</td><td class="n">${money(t.vat)}</td></tr>
-<tr class="total"><td>סה״כ כולל מע״מ</td><td class="n">${money(t.gross)}</td></tr>
+<tr><td>סכום לפני מע״מ</td><td class="n">${money(t.subtotal)}</td></tr>
+<tr><td>מע״מ (${d.vatRatePct}%)</td><td class="n">${money(t.vat)}</td></tr>
+<tr class="total"><td>סה״כ כולל מע״מ</td><td class="n">${money(t.total)}</td></tr>
 <tr class="trust"><td>קוזז מפיקדון בנאמנות</td><td class="n">-${money(d.trustApplied)}</td></tr>
 <tr class="total"><td>יתרה לתשלום (Balance Due)</td><td class="n big">${money(t.balanceDue)}</td></tr></table>
 <div class="sign"><div>חתימה אלקטרונית מאושרת: מקום לחותמת דיגיטלית</div><div>${d.bankInstructions ? esc(d.bankInstructions) : 'פרטי העברה בנקאית יימסרו על ידי המשרד'}</div></div>
 <p class="disc">חשבון עסקה זה מהווה דרישת תשלום בלבד ואינו מסמך מס. הוא אינו ייעוץ משפטי ואינו מחייב כחשבונית. קיזוז מפיקדון נאמנות מבוצע מכספי הלקוח המוחזקים בנאמנות.</p>`;
-  return shell(`חשבון עסקה ${d.billNo}`, d.firm, body);
+  return shell(`חשבון עסקה ${d.docRef}`, d.firm, body);
 }
 
 export function trustReceiptHtml(d: TrustReceiptData): string {

@@ -12,7 +12,7 @@ const ID = '3f2b8c1e-0000-4000-8000-123456789abc';
 
 test('forwards the caller JWT and only whitelisted params, returns a PDF', async () => {
   calls.length = 0;
-  const r = await handlePdfRequest(`/pdf?kind=bill&id=${ID}&client=${encodeURIComponent('דוד')}&evil=1`, 'Bearer jwt', mk());
+  const r = await handlePdfRequest(`/pdf?kind=bill&id=${ID}&court_case=${encodeURIComponent('12345-01-26')}&evil=1`, 'Bearer jwt', mk());
   assert.equal(r.status, 200); assert.equal(r.headers['content-type'], 'application/pdf');
   assert.equal(calls[0]!.headers.authorization, 'Bearer jwt');
   assert.match(calls[0]!.url, /^https:\/\/x\.test\/functions\/v1\/lalum-billing-doc\?kind=bill&id=/);
