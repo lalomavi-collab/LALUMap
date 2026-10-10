@@ -37,7 +37,7 @@ export function detectStructured(text){
   // PATCH: passport, combined parcel, street address
   for(const m of text.matchAll(/((?:passport|דרכון)(?:\s+(?:no|number|מס['׳]?|מספר))?\s*[:.]?\s*)([A-Z]{0,2}\d{6,9})/gdiu)){const [s,e]=m.indices[2];push(out,{kind:"ID_NUMBER",start:s,end:e,value:m[2],confidence:0.95})}
   for(const m of text.matchAll(/(?:גוש\s*\/\s*חלקה|גו"ח)\s*:?\s*(\d{1,6})\s*\/\s*(\d{1,5})/gdu)){for(const g of [1,2]){const [s,e]=m.indices[g];push(out,{kind:g===1?"GUSH":"HELKA",start:s,end:e,value:m[g],confidence:1})}}
-  for(const m of text.matchAll(/(?<![\p{L}])(?:רחוב|רח['׳]|שדרות|שד['׳]|דרך|סמטת|כיכר)\s+(?:[\p{L}'׳"״-]+\s+){0,2}[\p{L}'׳"״-]+\s+\d{1,4}[א-ת]?(?![\d\w])/gu)) push(out,{kind:"ADDRESS",start:m.index,end:m.index+m[0].length,value:m[0],confidence:0.9});
+  for(const m of text.matchAll(/(?<![\p{L}])(?:[ולבמהכש]{0,2}(?=רחוב|רח['׳]|שדרות|שד['׳]|סמטת|כיכר)|(?=דרך))((?:רחוב|רח['׳]|שדרות|שד['׳]|דרך|סמטת|כיכר)\s+(?:[\p{L}'׳"״-]+\s+){0,2}[\p{L}'׳"״-]+\s+\d{1,4}[א-ת]?)(?![\d\w])/gdu)) push(out,{kind:"ADDRESS",start:m.indices[1][0],end:m.indices[1][1],value:m[1],confidence:0.9});
   const landRules=[[/(גוש(?:\s+מס['׳]?)?\s*:?\s*)(\d{3,6})/gdu,"GUSH"],[/((?<!תת[\s-])חלק(?:ה|ות)(?:\s+מס['׳]?)?\s*:?\s*)(\d{1,5})/gdu,"HELKA"],[/(תת[\s-]?חלק(?:ה|ות)(?:\s+מס['׳]?)?\s*:?\s*)(\d{1,4})/gdu,"SUB_HELKA"]];
   for(const [re,kind] of landRules) for(const m of text.matchAll(re)){const [s,e]=m.indices[2];push(out,{kind,start:s,end:e,value:m[2],confidence:1})}
   return out;

@@ -10,7 +10,7 @@ Reference implementation of the patch: `tests/fixtures/pii-gateway-patched-detec
 2. numRe: add `\d{2,3}-\d{6,7}-\d` before `\d{2,8}-\d` (hyphenated company number, e.g. 51-234567-8).
 3. Passport rule: `(passport|דרכון)(\s+(no|number|מס'|מספר))?\s*[:.]?\s*([A-Z]{0,2}\d{6,9})` -> ID_NUMBER, only the number.
 4. Combined parcel `גוש/חלקה|גו"ח` followed by `N/M`: two tokens (GUSH, HELKA).
-5. Street address rule: street word (רחוב, רח', שדרות, שד', דרך, סמטת, כיכר) + 1-3 words + house number -> new kind ADDRESS (add to token kinds and restore map).
+5. Street address rule: street word (רחוב, רח', שדרות, שד', דרך, סמטת, כיכר; one or two prefix letters allowed before all but דרך, kept outside the span) + 1-3 words + house number -> new kind ADDRESS (add to token kinds and restore map).
 6. STOP words: add אינו אינה אינם אינן הינם הינן so the word before "ת"ז" is not read as a name.
 7. Egress guard `residual`: include `detectHeuristicPersons` (v13 checks structured + dictionary only, so a heuristic name can leave the gateway unmasked).
 

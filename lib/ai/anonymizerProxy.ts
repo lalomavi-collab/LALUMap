@@ -102,8 +102,9 @@ export function detectStructured(text: string): Raw[] {
   }
 
   // Street address: street word + name (1-3 words) + house number. The whole span is one ADDRESS token.
-  const addrRe = /(?<![\p{L}])(?:רחוב|רח['׳]|שדרות|שד['׳]|דרך|סמטת|כיכר)\s+(?:[\p{L}'׳"״-]+\s+){0,2}[\p{L}'׳"״-]+\s+\d{1,4}[א-ת]?(?![\d\w])/gu;
-  for (const m of text.matchAll(addrRe)) push(out, det('ADDRESS', m.index!, m[0], 0.9));
+  // One or two Hebrew prefix letters (ב, ל, מ, ה, ו, ש, כ) may precede the street word (ברחוב, לשדרות): they stay outside the span. "דרך" takes no prefix, because בדרך כלל is an idiom, not a street.
+  const addrRe = /(?<![\p{L}])(?:[ולבמהכש]{0,2}(?=רחוב|רח['׳]|שדרות|שד['׳]|סמטת|כיכר)|(?=דרך))((?:רחוב|רח['׳]|שדרות|שד['׳]|דרך|סמטת|כיכר)\s+(?:[\p{L}'׳"״-]+\s+){0,2}[\p{L}'׳"״-]+\s+\d{1,4}[א-ת]?)(?![\d\w])/gdu;
+  for (const m of text.matchAll(addrRe)) { const [s, e] = m.indices![1]; push(out, { kind: 'ADDRESS', start: s, end: e, value: m[1], confidence: 0.9, role: 'UNKNOWN' }); }
 
   // Land registry: only the numbers become tokens; the words גוש / חלקה stay readable.
   const combined = /(?:גוש\s*\/\s*חלקה|גו"ח)\s*:?\s*(\d{1,6})\s*\/\s*(\d{1,5})/gdu;
