@@ -1,0 +1,8 @@
+node_modules
+out
+.git
+docs
+supabase
+tests
+public
+!public/lalum-logo.svg
