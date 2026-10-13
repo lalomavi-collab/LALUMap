@@ -17,13 +17,13 @@
 
 ## חלק א: GitHub (15 דקות)
 
-### א1. ברירת המחדל של הריפו הופכת ל-main
+### א1. ברירת המחדל של הריפו הופכת ל-main (בוצע: אומתה כ-main ב-13.10.2026)
 
-- עמוד: https://github.com/lalomavi-collab/LALUMap/settings/branches
+- עמוד: https://github.com/lalomavi-collab/LALUMap/settings (סעיף Default branch נמצא ב-General, לא ב-Branches)
 - למה: כרגע ברירת המחדל היא ענף ישן (`claude/customer-notification-rea-failure-u8x03o`). `main` נוצר מאותו קומיט בדיוק, ולכן המעבר לא משנה שום תוכן.
 - הנחיה ל-Claude בכרום:
 ```
-פתח https://github.com/lalomavi-collab/LALUMap/settings/branches .
+פתח https://github.com/lalomavi-collab/LALUMap/settings .
 תחת "Default branch" קרא ואמור לי מה הענף הנוכחי. לחץ על סמל ההחלפה (שני חצים) לידו, בחר "main", ולחץ "Update".
 כשמופיע חלון אישור, עצור והצג לי את הטקסט שבו. אחרי שאכתוב "אשר", לחץ "I understand, update the default branch".
 בסוף רענן את העמוד ואשר שתחת "Default branch" כתוב "main".
@@ -39,7 +39,7 @@
 פתח https://github.com/lalomavi-collab/LALUMap/settings/rules/new?target=branch .
 הגדר: Ruleset Name = protect-main. Enforcement status = Active.
 תחת "Target branches" לחץ "Add target" ובחר "Include default branch" (או "Include by pattern" עם main).
-תחת "Rules" סמן רק: "Restrict deletions", "Block force pushes", "Require a pull request before merging" (השאר Required approvals = 0), "Require status checks to pass" (לחץ "Add checks" ובחר את הבדיקות שמופיעות ברשימה, ואם אין, השאר ריק ודווח לי).
+תחת "Rules" סמן רק: "Restrict deletions", "Block force pushes", "Require a pull request before merging" (השאר Required approvals = 0), "Require status checks to pass" (לחץ "Add checks" ובחר את הבדיקה בשם "check" שנוצרת מ-.github/workflows/check.yml; אם אינה ברשימה, השאר ריק ודווח לי).
 אל תוסיף Bypass list. לפני הלחיצה על "Create" עצור והצג לי את כל ההגדרות. אחרי "אשר" לחץ "Create".
 ```
 - תנאי הצלחה: ב-https://github.com/lalomavi-collab/LALUMap/settings/rules מופיע `protect-main` במצב Active.
