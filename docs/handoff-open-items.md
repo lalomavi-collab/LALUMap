@@ -1,36 +1,40 @@
-# Handoff: open items (written 2026-10-11)
+# Handoff: open items (updated 2026-10-23)
 
-State in one paragraph: the cockpit work areas, the inbound e-mail channel, the dashboard and the mint theme are merged. The one blocking item is the deployed `lalum-pipeline` (v20): it predates the repository code, so it does not mask street addresses at all. The fixed build exists (`supabase/functions/lalum-pipeline/index.ts`, bundled) and waits for the owner to paste and deploy it.
+State in one paragraph: the cockpit, the inbound e-mail channel, the originals vault, the recycle bin and legal hold are merged. In production `lalum-pipeline` runs **v24** (deployed 2026-10-17, `/selftest` verified, synthetic document masked correctly). v25 (a verb after a party title is not a name) and v26 (dedicated `PII_GATEWAY_TOKEN` for the pii-gateway call) are on `main` in `lalomavi-collab/desktop-tutorial` (`lalum-app/supabase/functions/lalum-pipeline/index.js`, commit `147132d`) and are **not deployed**. Until v26 is live, the cockpit chat authenticates to pii-gateway with the service-role key.
 
-## 1. Deploy lalum-pipeline (owner action, about five minutes)
-1. Open the copy page (private artifact) and press "copy all code".
-2. Supabase editor: https://supabase.com/dashboard/project/meoymkcotomoluwlwues/functions/lalum-pipeline/code
-3. Click inside the code, Ctrl+A, Ctrl+V, press "Deploy updates".
-4. Verify, both URLs must return exactly the same string:
-   - https://meoymkcotomoluwlwues.supabase.co/functions/v1/lalum-pipeline/selftest
-   - https://meoymkcotomoluwlwues.supabase.co/functions/v1/lalum-inquiry-email/selftest
-   - Expected: `{"masked":"מר [CLIENT_NAME_1], ת.ז. [ID_NUMBER_1], טלפון [PHONE_1], דוא\"ל [EMAIL_1], ב[ADDRESS_1], חשבון בנק [BANK_ACCOUNT_1]"}`
-5. Upload a synthetic document with "ברחוב הרצל 15" through the cockpit and confirm the address is masked in the matter.
-Rollback: Versions menu of the function, back to v20 (identical to what runs today).
-Expect: documents that the old, weaker residual check let through can now be rejected with `PII_LEAK_BLOCKED`. That is intended.
+Checked read-only on 2026-10-23: `pii_shield.gateway_clients` has no active row (one revoked smoke-test row from 2026-10-06); the last inquiry stored is from 2026-10-09; test matter `L-2026-0022` is open with no legal hold.
 
-## 2. pii-gateway (needs the source)
-`pii-gateway` is generated from the `@lalum/pii-shield` package (`deploy/build.mjs`) and has no address detector. Every cockpit chat call passes through it. Fix in the package source (add the prefixed-address rule from `lib/ai/anonymizerProxy.ts`, keep "דרך" without prefix), rebuild, deploy, then check its health URL. The package source is not in this repository: provide it (zip, or add the repository to the session).
+## 1. Gateway token, then deploy v26 (blocking; order is mandatory)
+`PII_GATEWAY_TOKEN` currently holds a Resend key that was pasted there by mistake on 2026-10-17. Deploying v26 before it is replaced breaks the cockpit chat (pii-gateway accepts only `lpg_` tokens whose SHA-256 is an active row).
+1. Owner, locally in PowerShell: generate `lpg_` + 48 hex characters, copy it to the clipboard without printing it, print only its SHA-256 (lowercase hex, UTF-8). The block is in the owner's task panel.
+2. Owner: paste the clipboard into `PII_GATEWAY_TOKEN` at https://supabase.com/dashboard/project/meoymkcotomoluwlwues/functions/secrets , then clear the clipboard. Send only the 64-character hash.
+3. Assistant, on "הכנס": `insert into pii_shield.gateway_clients (name, token_hash) values ('lalum-pipeline', '<hash>')` (tenant defaults to `pii_shield.lalum_tenant()`, `allow_binary` defaults to false).
+4. Assistant, on "פרוס": deploy `lalum-pipeline` from `main` (`verify_jwt` false), then check `/selftest` and one cockpit chat message. Expected: `last_used_at` is set on the new row.
+Rollback: Versions menu of the function back to v24, or redeploy `index.js` from commit `1a8716b`.
 
-## 3. Decisions the owner must take
-- Virus scanning for inquiry attachments (until it exists, attachments from e-mail are NOT stored, only counted):
-  - A. Self-hosted ClamAV in a small container in the EU or Israel: files stay in our infrastructure; needs hosting and signature updates. Recommended, because client files never reach a third party.
-  - B. Scanning API: faster to build, but client files leave our infrastructure and need the same sub-processor review as any provider.
-- Inbound e-mail processing region: Resend processes lalumapp.com mail in ap-northeast-1 (Tokyo). Either accept it and disclose it in the privacy text and sub-processor list, or move inbound mail to a provider in the EU.
-- Replace the old full-access Resend key (`RESEND_API_KEY`) with the restricted one and delete the unused keys: https://resend.com/api-keys , then the secret: https://supabase.com/dashboard/project/meoymkcotomoluwlwues/functions/secrets
-- Approve the `matter_alert` WhatsApp template (Pending) in WhatsApp Manager.
+## 2. Resend keys and secrets
+- `RESEND_API_KEY` was deleted on 2026-10-17 and later restored. A finance test e-mail was delivered on 2026-10-22, so it works. Which key it holds is unknown: no key was created after 2026-10-17 except `supabase-auth-smtp`.
+- Readers: `RESEND_API_KEY` feeds `lalum-book`, `lalum-notify`, `lalum-discussion-submit`, `lalum-lead`, `lalum-whatsapp-webhook` and the finance functions (`lalum-fin-doc-send`, `lalum-fin-dunning-send`, `lalum-fin-report-mail`). `RESEND_API_KEY1` feeds `lalum-dispatch-worker` and inbound mail (`lalum-inquiry-email`). Do not delete `RESEND_API_KEY1`.
+- Delete an old key only after "Last used" at https://resend.com/api-keys shows it is unused, and only by explicit name from the owner. The Resend account is shared with CoPartners: never touch `copartner-ai`.
 
-## 4. After step 1 (assistant)
-Remove or protect `/selftest`; replace the service-role key used between lalum-pipeline and pii-gateway with a dedicated shared secret; test an e-mail with an attachment (expected: inquiry stored, notice that files were not kept).
+## 3. Owner checks
+- Intake: one test e-mail to the intake address shown on the cockpit inquiries page; it must appear as an inquiry with the body hidden. Since 2026-10-09 only DMARC reports have arrived.
+- Stage 5 on `L-2026-0022`: ZIP export (are originals included), legal hold (deletion must be blocked), permanent deletion (is the original gone from Storage).
+- WhatsApp: `matter_alert` is approved (Utility, `he`, one variable: the link) but lives in the "Test WhatsApp Business Account". Confirm which account owns the sender in `WA_NOTIFY_PHONE_ID`; if it is a production account, create the same template there. Do not use `new_matter` (marketing category).
+- Supabase advisors: Leaked Password Protection is off; 111 SECURITY DEFINER functions in `public` are callable by authenticated users and need a review (start with admin, bin, export); `pg_net` is in `public`. These are tracked by the security workstream.
 
-## 5. Projects not started
-ClamAV scanning and stored attachments, WhatsApp ingest, website form ingest, automatic sorting of loose files (with human approval), end-to-end permanent deletion test with Storage, ZIP export including originals, legal verification of the cross-border transfer text.
+## 4. Decisions the owner must take
+- Virus scanning for inquiry attachments (until it exists, e-mail attachments are counted, not stored): A. self-hosted ClamAV in the EU or Israel (recommended: client files never reach a third party), or B. a scanning API (needs a sub-processor review).
+- Inbound e-mail region: Resend processes lalumapp.com mail in ap-northeast-1 (Tokyo). Accept and disclose it in the privacy text and sub-processor list, or move inbound mail to an EU provider.
+- A client name typed into a document's free-text title is not masked.
+
+## 5. pii-gateway source
+`pii-gateway` is generated from `@lalum/pii-shield` (`deploy/build.mjs`) and has no address detector. The package source is not in this repository; provide it to align the detectors.
+
+## 6. Projects not started
+ClamAV scanning and stored attachments, WhatsApp ingest, website form ingest, automatic sorting of loose files (with human approval), end-to-end permanent deletion test with Storage, legal verification of the cross-border transfer text.
 
 ## Lessons
-- Never hand-copy a large bundle into a function: the owner pastes the built file and the `/selftest` string proves the masking code.
-- The deployed function can be older than the repository: after every merge that touches `lib/ai`, redeploy and run `/selftest`.
+- Never hand-copy a large bundle into a function: deploy the built file and prove it with `/selftest`.
+- The deployed function can be older than the repository: after every merge that touches the pipeline, redeploy and run `/selftest`.
+- Secret values never pass through chat or a browser agent. A secret is pasted only by the owner, directly into the dashboard.
