@@ -5,6 +5,8 @@
 //   POST /api/v1/documents/draft    (user JWT)   re-masks and saves the editor draft
 //   POST /api/v1/documents/analyze  (user JWT)   re-runs the playbook for a chosen practice area on masked text
 //   POST /api/v1/documents/export   (user JWT)   returns content only after the 4-step sign-off is valid
+//   POST /api/v1/matters/parties    (user JWT)   declares the client or adverse party of an existing matter, after a
+//                                                conflict check; with no parties it only returns the counts per role
 // Base URL: /functions/v1/lalum-pipeline . verify_jwt is OFF at the platform level because the intake
 // webhook has no user JWT; every route authenticates itself below and fails closed.
 // deno-lint-ignore-file no-explicit-any
@@ -16,12 +18,14 @@ import { PiiLeakError, PRACTICE_AREAS } from '../../../lib/ai/types.ts';
 import type { PracticeArea } from '../../../lib/ai/types.ts';
 import { analyze } from '../../../lib/ai/domainPlaybookEngine.ts';
 import { sha256Hex } from '../../../lib/services/auditAndRouting.ts';
-import { SupabaseConflictStore, SupabaseRoutingStore, cachedRuleLoader } from '../../../lib/services/supabaseStores.ts';
+import { SupabaseConflictStore, SupabasePartiesStore, SupabaseRoutingStore, cachedRuleLoader } from '../../../lib/services/supabaseStores.ts';
+import { declareParties, parseParties } from '../../../lib/services/matterParties.ts';
 import { withPipeline } from '../../../middleware/pipelineMiddleware.ts';
 import type { RouteRule } from '../../../middleware/pipelineMiddleware.ts';
 
 const URL_ = Deno.env.get('SUPABASE_URL')!;
 const SERVICE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const ANON = Deno.env.get('SUPABASE_ANON_KEY')!;
 const sb: any = createClient(URL_, SERVICE, { auth: { persistSession: false } });
 
 const ALLOWED_ORIGINS = new Set(['https://lalumapp.com', 'https://www.lalumapp.com', 'http://localhost:3000', 'http://localhost:8080']);
@@ -165,6 +169,30 @@ async function exportRoute(req: Request): Promise<Response> {
   return json(req, 200, { ok: true, file_name: doc.file_name, content: doc.editor_content });
 }
 
+// Declaring parties needs the same right as working on the matter: the database answers lalum_is_staff_on as the
+// caller (firm, second factor, partner or admin, or an attorney on the matter's team, matter not in the bin).
+const partiesStore = new SupabasePartiesStore(sb);
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+async function partiesRoute(req: Request): Promise<Response> {
+  const u = await userFromRequest(req);
+  if (!u) return json(req, 401, { ok: false, code: 'UNAUTHENTICATED' });
+  const { matter_id, parties } = await req.json().catch(() => ({}));
+  const declared = parseParties(parties);
+  if (typeof matter_id !== 'string' || !UUID_RE.test(matter_id) || !declared) return json(req, 400, { ok: false, code: 'BAD_REQUEST' });
+  if (!['FIRM_PARTNER', 'ADMIN', 'ATTORNEY'].includes(u.role)) return json(req, 404, { ok: false, code: 'NOT_FOUND' });
+  const asUser: any = createClient(URL_, ANON, { auth: { persistSession: false }, global: { headers: { Authorization: req.headers.get('authorization')! } } });
+  const { data: staff, error } = await asUser.rpc('lalum_is_staff_on', { p_matter: matter_id });
+  if (error || staff !== true) return json(req, 404, { ok: false, code: 'NOT_FOUND' });
+  if (!declared.length) return json(req, 200, { ok: true, counts: await partiesStore.counts(matter_id) });
+  const { data: status } = await sb.rpc('lalum_firm_status', { p_firm: u.firmId });
+  if (status !== 'ACTIVE') return json(req, 402, { ok: false, code: 'FIRM_INACTIVE' });
+  const { data: key, error: keyError } = await sb.rpc('lalum_firm_conflict_key', { p_firm: u.firmId });
+  if (keyError || !key) throw new Error('firm key unavailable');
+  const r = await declareParties(partiesStore, key as string, { firmId: u.firmId, userId: u.userId, matterId: matter_id }, declared);
+  if (r.halted) return json(req, 409, { ok: false, code: 'CONFLICT_HALT', message: r.neutralMessage });
+  return json(req, 200, { ok: true, conflict: r.light, added: r.added, counts: r.counts });
+}
+
 // Static synthetic probe: proves the deployed masking code behaves like the repository's (no caller input, no data).
 const PROBE = 'מר דוד כהן, ת.ז. 123456782, טלפון 052-123-4567, דוא"ל test.person@example.test, ברחוב הרצל 15, חשבון בנק 12-345-678901, John Smith, Adv';
 
@@ -180,6 +208,7 @@ Deno.serve(async (req: Request) => {
     if (path.endsWith('/api/v1/documents/draft')) res = await draftRoute(req);
     else if (path.endsWith('/api/v1/documents/analyze')) res = await analyzeRoute(req);
     else if (path.endsWith('/api/v1/documents/export')) res = await exportRoute(req);
+    else if (path.endsWith('/api/v1/matters/parties')) res = await partiesRoute(req);
     else res = await pipelineRoute(req);
     const h = new Headers(res.headers);
     for (const [k, v] of Object.entries(corsFor(req))) h.set(k, v);
