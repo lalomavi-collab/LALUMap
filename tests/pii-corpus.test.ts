@@ -24,6 +24,8 @@ const corpus: Item[] = [
   { key: 't10', text: 'עו"ד יוסי לוינסון והשמאי רונן אדלר הגישו חוות דעת.', mustMask: ['יוסי לוינסון', 'רונן אדלר'] },
   { key: 't11', text: 'המנוח אברהם בן-דוד ויורשיו, הנתבעת שרה מזרחי טענה.', mustMask: ['אברהם בן-דוד', 'שרה מזרחי'] },
   { key: 't12', text: 'דרכון מספר 12345678 של התובע, ו-Mr. John Smith.', mustMask: ['12345678', 'John Smith'] },
+  { key: 't16', text: 'Signed: John Smith, Adv. Copy to Jane Doe Esq. and Dan Levi CPA.', mustMask: ['John Smith', 'Jane Doe', 'Dan Levi'] },
+  { key: 't17', text: 'בכבוד רב,\nיוסי לוינסון, עו"ד\nרונן אדלר, רו״ח', mustMask: ['יוסי לוינסון', 'רונן אדלר'] },
   { key: 't14', text: `כתובת: רחוב הרצל 15, תל אביב. אמר ישראל ישראלי כי ${badId} אינו ת"ז.`, mustMask: ['הרצל 15'], knownGaps: ['ישראל ישראלי'] },
   { key: 't15', text: `נציג מטעם נדלן פרימיום בע״מ ת.ז. ${id1} ואימייל Info@Test-Firm.com; ח"פ 51-234567-8.`, mustMask: ['נדלן פרימיום בע״מ', id1, 'Info@Test-Firm.com', '51-234567-8'] },
 ];
@@ -35,6 +37,16 @@ for (const item of corpus) {
     for (const span of item.mustMask) assert.ok(!r.masked.includes(span), `leaked: ${span}`);
   });
 }
+
+test('pii corpus: a title after the name keeps the title and the words around it (utility)', async () => {
+  const mask = async (t: string): Promise<string> =>
+    (await new LalumAnonymizerProxy({ vault: await EphemeralVault.create(), parties: [] }).anonymize(t)).masked;
+  assert.equal(await mask('Signed: John Smith, Adv.'), 'Signed: [CLIENT_NAME_1], Adv.');
+  assert.equal(await mask('Dr. John Smith, Esq.'), 'Dr. [CLIENT_NAME_1], Esq.');
+  assert.equal(await mask('בכבוד רב, יוסי לוינסון, עו"ד'), 'בכבוד רב, [CLIENT_NAME_1], עו"ד');
+  assert.equal(await mask('הגיש אל, עו"ד'), 'הגיש אל, עו"ד', 'stop words alone are not a name');
+  assert.equal(await mask('פנה לעו"ד בעניין'), 'פנה לעו"ד בעניין', 'a title without a name before it');
+});
 
 test('pii corpus: amounts, areas, dates and tender numbers are not masked (utility)', async () => {
   const a = new LalumAnonymizerProxy({ vault: await EphemeralVault.create(), parties: [] });

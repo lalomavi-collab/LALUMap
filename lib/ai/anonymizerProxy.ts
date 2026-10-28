@@ -165,6 +165,11 @@ const STOP = new Set(
 const HW = `[${HEB}][${HEB}'׳"״\\-]+`;
 const ANCHOR_ID_RE = new RegExp(String.raw`((?:${HW}\s+){0,2}${HW})\s*,?\s*(?=ת[.״"']?\s?ז)`, 'gdu');
 const ORG_RE = new RegExp(String.raw`((?:${HW}\s+){0,3}${HW})\s+(בע["״]?מ|Ltd\.?|LLC)`, 'gdu');
+// A title after the name, as on a signature line (T49): "John Smith, Adv", "Jane Doe Esq.", "Dan Levi CPA",
+// "דוד כהן, עו"ד". Before this only a title before the name was caught, so these names reached the model.
+// Hebrew needs the comma: without it the title usually opens the next name, which TITLE_RE already takes.
+const EN_SUFFIX_RE = /\b(?!(?:Mr|Mrs|Ms|Dr|Prof)\b)([A-Z][a-z'-]+(?:\s+[A-Z][a-z'-]+){0,2})(?:\s*,\s*|\s+)(?:Adv|Esq|CPA)\b/gd;
+const HE_SUFFIX_RE = new RegExp(String.raw`((?:${HW}\s+){0,2}${HW})\s*,\s*(?:עו["״]ד|רו["״]ח)(?![${HEB}])`, 'gdu');
 
 function trimLeftToName(m: RegExpMatchArray, confidence: number, withSuffix: boolean): Raw | null {
   const [g1s, g1e] = (m as RegExpMatchArray & { indices: Array<[number, number]> }).indices[1];
@@ -192,10 +197,13 @@ export function detectHeuristicNames(text: string): Raw[] {
   }
   for (const m of text.matchAll(ANCHOR_ID_RE)) { const d = trimLeftToName(m, 0.8, false); if (d) out.push(d); }
   for (const m of text.matchAll(ORG_RE)) { const d = trimLeftToName(m, 0.8, true); if (d) out.push(d); }
-  for (const m of text.matchAll(EN_TITLE_RE)) {
-    const [s, e] = (m as RegExpMatchArray & { indices: Array<[number, number]> }).indices[1];
-    out.push({ kind: 'CLIENT_NAME', start: s, end: e, value: m[1], confidence: 0.75, role: 'UNKNOWN' });
+  for (const re of [EN_TITLE_RE, EN_SUFFIX_RE]) {
+    for (const m of text.matchAll(re)) {
+      const [s, e] = (m as RegExpMatchArray & { indices: Array<[number, number]> }).indices[1];
+      out.push({ kind: 'CLIENT_NAME', start: s, end: e, value: m[1], confidence: 0.75, role: 'UNKNOWN' });
+    }
   }
+  for (const m of text.matchAll(HE_SUFFIX_RE)) { const d = trimLeftToName(m, 0.75, false); if (d) out.push(d); }
   return out;
 }
 
